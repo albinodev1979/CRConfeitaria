@@ -315,7 +315,22 @@ app.post("/api/usuarios/login", async (req, res) => {
   }
 });
 
+/// ==========================================
+// 3. CONFIGURAÇÃO DE ARQUIVOS ESTÁTICOS E ROTAS VISUAIS
+// ==========================================
+const path = require("path");
+
+// Faz o servidor Express olhar uma pasta para trás (..) para achar os arquivos HTML, CSS e JS soltos na raiz
+app.use(express.static(path.join(__dirname, "..")));
+
+// Entrega o seu arquivo index.html principal quando alguém acessa o link puro do site
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "..", "index.html"));
+});
+
+// ==========================================
 // 4. INICIALIZAÇÃO DO SERVIDOR (Porta dinâmica necessária para o Render)
+// ==========================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor ativo e rodando na porta ${PORT}`);
