@@ -104,7 +104,7 @@ app.post("/api/usuarios/login", async (req, res) => {
     }
 
     const queryTexto =
-      "SELECT * FROM usuarios WHERE username = \$1 OR email = \$2";
+      "SELECT * FROM usuarios WHERE username = $1 OR email = $2";
     const resultado = await pool.query(queryTexto, [
       loginIdentificador,
       loginIdentificador,
@@ -116,6 +116,7 @@ app.post("/api/usuarios/login", async (req, res) => {
         .json({ erro: "Usuário/E-mail ou senha incorretos." });
     }
 
+    // 🌟 Pegando a primeira linha correta do banco de dados
     const usuario = resultado.rows[0];
 
     if (usuario.senha !== senha) {
