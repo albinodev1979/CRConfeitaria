@@ -116,22 +116,24 @@ app.post("/api/usuarios/login", async (req, res) => {
         .json({ erro: "Usuário/E-mail ou senha incorretos." });
     }
 
-    // 🌟 Pegando a primeira linha correta do banco de dados
-    const usuario = resultado.rows[0];
+    // 🏆 CORREÇÃO DEFINITIVA: Adicione o [0] no final para capturar a primeira linha da tabela
+    const usuarioEncontrado = resultado.rows[0];
 
-    if (usuario.senha !== senha) {
+    // Compara a senha direto com o objeto da primeira linha
+    if (usuarioEncontrado.senha !== senha) {
       return res
         .status(401)
         .json({ erro: "Usuário/E-mail ou senha incorretos." });
     }
 
+    // Retorna os dados mapeados corretamente para o seu script.js ler
     res.json({
       sucesso: true,
       usuario: {
-        id: usuario.id,
-        username: usuario.username,
-        email: usuario.email,
-        eh_admin: usuario.eh_admin,
+        id: usuarioEncontrado.id,
+        username: usuarioEncontrado.username,
+        email: usuarioEncontrado.email,
+        eh_admin: usuarioEncontrado.eh_admin,
       },
     });
   } catch (erro) {
