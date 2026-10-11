@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Sistema Seguro de CR Confeitaria</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+
+        <!-- CONTAINER DE LOGIN -->
+        <div class="login-container" id="loginBox">
+            <h2>Área Restrita</h2>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="username">Usuário</label>
+                    <input type="text" id="username" required
+                        autocomplete="username">
+                </div>
+
+                <div class="input-group password-wrapper">
+                    <label for="password">Senha</label>
+                    <div class="input-with-toggle">
+                        <input type="password" id="password" required
+                            autocomplete="current-password">
+                        <span class="toggle-password"
+                            id="toggleLoginPassword">👁️</span>
+                    </div>
+                </div>
+
+                <div class="remember-me"
+                    style="display: flex; align-items: center; gap: 8px; margin-bottom: 1.1rem; font-size: 1.9rem; color: #94a3b8;">
+                    <input type="checkbox" id="rememberMe"
+                        style="width: auto; cursor: pointer; margin: 0;">
+                    <label for="rememberMe"
+                        style="cursor: pointer; user-select: none; color: #94a3b8; font-size: 1.1rem; font-weight: normal; display: inline;">Lembrar
+                        usuário e senha</label>
+                </div>
+
+                <button type="submit" id="loginBtn">Entrar</button>
+            </form>
+
+            <div class="utilities">
+                <a href="#" id="openRegister">Criar uma conta</a>
+                <a href="#" id="openForgotModal">Esqueceu a senha?</a>
+            </div>
+            <p id="errorMessage" class="error-msg"></p>
+        </div>
+
+        <!-- CONTAINER DE CADASTRO -->
+        <div class="login-container" id="registerBox" style="display: none;">
+            <h2>Criar Conta</h2>
+            <form id="registerForm">
+                <div class="input-group">
+                    <label for="regUsername">Escolha um Usuário</label>
+                    <input type="text" id="regUsername" required
+                        autocomplete="username">
+                </div>
+
+                <div class="input-group">
+                    <label for="regEmail">E-mail Cadastrado</label>
+                    <input type="email" id="regEmail" required
+                        autocomplete="email" placeholder="exemplo@email.com">
+                    <p id="emailValidationMessage"
+                        class="validation-small-msg"></p>
+                </div>
+
+                <div class="input-group password-wrapper">
+                    <label for="regPassword">Senha</label>
+                    <div class="input-with-toggle">
+                        <input type="password" id="regPassword" required
+                            autocomplete="new-password">
+                        <span class="toggle-password"
+                            id="toggleRegPassword">👁️</span>
+                    </div>
+                    <div class="strength-bar-container"><div id="strengthBar"
+                            class="strength-bar"></div></div>
+                    <p id="strengthText" class="strength-text"></p>
+                </div>
+
+                <button type="submit" id="registerBtn">Cadastrar</button>
+            </form>
+
+            <div class="utilities" style="justify-content: center;">
+                <a href="#" id="openLogin">Já tem uma conta? Voltar ao Login</a>
+            </div>
+            <p id="registerMessage" class="success-msg"></p>
+        </div>
+
+        <!-- ÁREA LOGADA MULTIPAINEL -->
+        <div class="dashboard-container" id="welcomeBox"
+            style="display: none; flex-direction: column; height: 90vh;">
+            <!-- MENU SUPERIOR HORIZONTAL -->
+            <header class="top-navbar"
+                style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 1rem 2rem; border-bottom: 1px solid #334155; width: 100%;">
+                <div class="nav-logo"
+                    style="display: flex; align-items: center; gap: 1.5rem;">
+                    <h2 style="margin: 0; font-size: 1.4rem;">CR
+                        Confeitaria</h2>
+                    <!-- ID Adicionado para as boas-vindas do script -->
+                    <span id="userGreeting"
+                        style="color: #f7f4f3; font-size: 1.9rem; font-weight: bold;"></span>
+                    <nav style="display: flex; gap: 10px;">
+                        <button class="nav-btn active"
+                            data-target="panel-home">🎂 Vitrine de
+                            Bolos</button>
+                        <button class="nav-btn" data-target="panel-orders">📋
+                            Meus Pedidos</button>
+                        <button class="nav-btn" data-target="panel-profile">👤
+                            Minha Conta</button>
+                        <button class="nav-btn" data-target="panel-settings">⚙️
+                            Configurações</button>
+                    </nav>
+                </div>
+
+                <div class="nav-actions"
+                    style="display: flex; align-items: center; gap: 15px;">
+                    <button id="cartToggleBtn" class="cart-toggle-btn">🛒
+                        Carrinho (<span id="cartCount">0</span>)</button>
+                    <button id="logoutBtn" class="logout-btn"
+                        style="width: auto; padding: 0.6rem 1rem;">🚪
+                        Sair</button>
+                </div>
+            </header>
+
+            <!-- CONTEÚDO OCUPANDO TODO O ESPAÇO DA TELA -->
+            <main class="content-area"
+                style="flex: 1; width: 100%; padding: 2rem; overflow-y: auto;">
+                <!-- Painel 1: Vitrine de Bolos -->
+                <section id="panel-home" class="dashboard-panel active">
+                    <div class="panel-header-info"
+                        style="margin-bottom: 1.5rem;">
+                        <h3>Nossos Bolos Artesanais</h3>
+                        <p>Preços fixos exclusivos para usuários autenticados.
+                            Adicione os itens desejados abaixo!</p>
+                    </div>
+                    <div class="products-grid" id="cakeContainer"></div>
+                </section>
+
+                <!-- Painel 2: Histórico de Pedidos -->
+                <section id="panel-orders" class="dashboard-panel">
+                    <h3>Histórico de Pedidos</h3>
+                    <p style="color: #94a3b8; margin-bottom: 1.5rem;">Confira
+                        abaixo a lista de encomendas enviadas para o
+                        WhatsApp.</p>
+                    <div id="ordersContainer"
+                        style="display: flex; flex-direction: column; gap: 15px;"></div>
+                </section>
+
+                <!-- Painel 3: Perfil da Conta -->
+                <section id="panel-profile" class="dashboard-panel">
+                    <h3>Meus Dados</h3>
+                    <div class="profile-details">
+                        <p><strong>Nome de Usuário:</strong> <span
+                                id="profileUser"></span></p>
+                        <p><strong>E-mail Vinculado:</strong> <span
+                                id="profileEmail"></span></p>
+                    </div>
+                </section>
+
+                <!-- Painel 4: Configurações -->
+                <section id="panel-settings" class="dashboard-panel">
+                    <h3>Preferências do Sistema</h3>
+                    <p style="color: #94a3b8; margin-bottom: 1.5rem;">Configure
+                        o recebimento de pedidos da sua loja.</p>
+                    <div class="setting-item"
+                        style="display: block; margin-bottom: 1.5rem;">
+                        <label
+                            style="display: block; margin-bottom: 0.5rem; color: #94a3b8; font-size: 0.9rem;">Número
+                            do WhatsApp da Loja (com DDD e apenas
+                            números)</label>
+                        <input type="text" id="shopWhatsAppNumber"
+                            value="5581992185775"
+                            style="width: 100%; padding: 0.75rem; border-radius: 6px; border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 1rem; outline: none;">
+                        <p
+                            style="font-size: 0.75rem; color: #64748b; margin-top: 5px;">Número
+                            padrão pré-configurado com sucesso.</p>
+                    </div>
+
+                    <div class="setting-item"
+                        style="display: flex; justify-content: space-between; align-items: center; background: #0f172a; padding: 1rem; border-radius: 6px; border: 1px solid #334155;">
+                        <label>Tema Escuro Avançado</label>
+                        <input type="checkbox" checked disabled>
+                    </div>
+                </section>
+            </main>
+
+            <!-- GAVETÃO DO CARRINHO LATERAL -->
+            <div id="cartDrawer" class="cart-drawer">
+                <div class="cart-drawer-header">
+                    <h3>Seu Carrinho</h3>
+                    <span id="closeCartBtn"
+                        class="close-cart-btn">&times;</span>
+                </div>
+                <div id="cartItemsContainer" class="cart-items-container">
+                    <p class="empty-cart-text">Seu carrinho está vazio.</p>
+                </div>
+
+                <div class="cart-drawer-footer">
+                    <div class="cart-total-box">
+                        <span>Total:</span>
+                        <span id="cartTotalValue">R$ 0,00</span>
+                    </div>
+                    <!-- Alterado de <a> para <button> para sincronizar 100% com a engine de cliques do JavaScript -->
+                    <button type="button" id="checkoutBtn" class="checkout-btn"
+                        style="width: 100%; display: block; text-align: center; font-weight: bold; border: none; cursor: pointer;">⚡
+                        Finalizar Compra via WhatsApp</button>
+                    <button type="button" id="clearHistoryBtn"
+                        style="background: #ef4444; color: white; padding: 0.85rem; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; transition: background 0.2s; margin-top: 1.5rem; width: 100%;">🗑️
+                        Limpar Todo o Histórico de Pedidos</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL DE RECUPERAÇÃO DE SENHA -->
+        <div id="forgotModal" class="modal">
+            <div class="modal-content">
+                <span class="close-btn" id="closeForgotModal">&times;</span>
+                <h3>Recuperar Senha</h3>
+                <p>Insira seu e-mail cadastrado para receber as instruções de
+                    recuperação.</p>
+                <form id="forgotForm">
+                    <div class="input-group">
+                        <label for="recoveryEmail">E-mail</label>
+                        <input type="email" id="recoveryEmail" required>
+                    </div>
+                    <button type="submit">Enviar Link de Recuperação</button>
+                </form>
+                <p id="recoveryMessage" class="success-msg"></p>
+            </div>
+        </div>
+
+        <script src="script.js"></script>
+    </body>
+</html>
