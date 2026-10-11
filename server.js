@@ -15,9 +15,22 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Faz o Express servir os arquivos estáticos (HTML, CSS, JS) subindo um nível para a raiz
-const pastaPublica = path.resolve(__dirname, "..");
+// ==========================================
+// 2. MIDDLEWARES
+// ==========================================
+app.use(cors());
+app.use(express.json());
+
+// 🌟 MUDANÇA AQUI: Removeu o ".." porque os arquivos HTML estão na mesma pasta raiz do server.js no Git
+const pastaPublica = path.resolve(__dirname);
 app.use(express.static(pastaPublica));
+
+// ==========================================
+// 3. ROTAS VISUAIS (FRONT-END)
+// ==========================================
+app.get("/", (req, res) => {
+  res.sendFile(path.join(pastaPublica, "index.html"));
+});
 
 // ==========================================
 // 3. ROTAS VISUAIS (FRONT-END)
