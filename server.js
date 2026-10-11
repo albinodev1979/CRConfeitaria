@@ -315,17 +315,19 @@ app.post("/api/usuarios/login", async (req, res) => {
   }
 });
 
-/// ==========================================
+// ==========================================
 // 3. CONFIGURAÇÃO DE ARQUIVOS ESTÁTICOS E ROTAS VISUAIS
 // ==========================================
 const path = require("path");
 
-// Faz o servidor Express olhar uma pasta para trás (..) para achar os arquivos HTML, CSS e JS soltos na raiz
-app.use(express.static(path.join(__dirname, "..")));
+// Força o Express a subir um nível para achar a pasta principal onde estão soltos o index.html, CSS e JS
+const pastaPublica = path.resolve(__dirname, "..");
 
-// Entrega o seu arquivo index.html principal quando alguém acessa o link puro do site
+app.use(express.static(pastaPublica));
+
+// Rota principal que vai buscar o index.html exatamente na pasta principal do projeto
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "..", "index.html"));
+  res.sendFile(path.join(pastaPublica, "index.html"));
 });
 
 // ==========================================
