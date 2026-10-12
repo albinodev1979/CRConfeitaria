@@ -15,22 +15,15 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ==========================================
-// 2. MIDDLEWARES
-// ==========================================
-app.use(cors());
-app.use(express.json());
+// Permite que o navegador acesse os arquivos da pasta assets publicamente
+app.use("/assets", express.static("assets"));
+
+// Ou, se preferir liberar a raiz inteira do projeto para arquivos estáticos:
+// app.use(express.static('.'));
 
 // 🌟 MUDANÇA AQUI: Removeu o ".." porque os arquivos HTML estão na mesma pasta raiz do server.js no Git
 const pastaPublica = path.resolve(__dirname);
 app.use(express.static(pastaPublica));
-
-// ==========================================
-// 3. ROTAS VISUAIS (FRONT-END)
-// ==========================================
-app.get("/", (req, res) => {
-  res.sendFile(path.join(pastaPublica, "index.html"));
-});
 
 // ==========================================
 // 3. ROTAS VISUAIS (FRONT-END)
