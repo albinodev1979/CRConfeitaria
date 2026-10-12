@@ -59,6 +59,31 @@ h3 {
   border-color: #38bdf8;
 }
 
+/* Estilos do Tema Claro */
+body.light-theme {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .cake-card,
+body.light-theme .cart-item-card,
+body.light-theme .order-card,
+body.light-theme #cartDrawer {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .cake-title,
+body.light-theme h4 {
+  color: #0f172a !important;
+}
+
+body.light-theme .cake-desc,
+body.light-theme p {
+  color: #475569 !important;
+}
+
 .validation-small-msg {
   font-size: 0.8rem;
   margin-top: 4px;

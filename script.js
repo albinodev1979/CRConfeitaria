@@ -14,20 +14,86 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarDadosLembrados();
   configurarOlhinhoSenha();
   updateCartUI();
+  // Carregar tema preferido ao iniciar
+  const temaSalvo = localStorage.getItem("cr_theme");
+  if (temaSalvo === "light") {
+    document.body.classList.add("light-theme");
+  }
 });
 
-// 🍰 BUSCA REAL DOS BOLOS NO POSTGRESQL (RENDER)
-async function carregarVitrineReal() {
-  try {
-    const response = await fetch("/api/produtos");
-    if (!response.ok) throw new Error("Erro na resposta da API");
+function generateCakeCatalog(cakeFlavors) {
+  if (!cakeContainer) return;
+  cakeContainer.innerHTML = "";
 
-    const bolosDoBanco = await response.json();
-    console.log("🍰 BOLOS CARREGADOS DO BANCO COM SUCESSO:", bolosDoBanco);
-    generateCakeCatalog(bolosDoBanco);
-  } catch (error) {
-    console.error("❌ Erro ao carregar a vitrine de bolos:", error);
+  if (!cakeFlavors || cakeFlavors.length === 0) {
+    cakeContainer.innerHTML =
+      '<p class="empty-cart-text" style="color: #94a3b8; text-align: center; width: 100%;">Nenhum bolo disponível no banco de dados.</p>';
+    return;
   }
+
+  cakeFlavors.forEach((bolo, index) => {
+    const itemNumber = index + 1;
+
+    const tituloBolo =
+      bolo.nome || bolo.name || bolo.title || `Bolo Tradicional #${itemNumber}`;
+    const valorBolo = bolo.preco || bolo.price || bolo.value || 0;
+    const detalheBolo =
+      bolo.descricao ||
+      bolo.description ||
+      bolo.desc ||
+      "Delicioso bolo artesanal feito com receitas exclusivas.";
+
+    const price = parseFloat(valorBolo).toFixed(2);
+    const fullName = tituloBolo + " (#" + itemNumber + ")";
+
+    // Caminho exato apontando para assets/img/fotoX.jpg (conforme a sua pasta)
+    const numeroFoto = (index % 30) + 1; // Garante que repita ou ajuste para as 30 fotos disponíveis
+    const imagemSrc =
+      bolo.imagem || bolo.img || `assets/img/foto${numeroFoto}.jpg`;
+
+    // HTML da Imagem Real com fallback de segurança caso alguma foto falhe
+    const imagemHTML = `
+      <div style="width: 100%; height: 180px; overflow: hidden; border-radius: 8px; background: #0f172a;">
+        <img src="${imagemSrc}" alt="${fullName}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='assets/img/foto1.jpg';">
+      </div>
+    `;
+
+    const card = document.createElement("div");
+    card.className = "cake-card";
+    card.style =
+      "background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 12px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; position: relative; margin-bottom: 15px; color: white;";
+
+    let htmlInterno = "";
+    htmlInterno += "<div style='position: relative;'>";
+    htmlInterno +=
+      "  <span style='position: absolute; top: 10px; left: 10px; background: #e11d48; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2;'>Premium</span>";
+    htmlInterno += "  " + imagemHTML;
+    htmlInterno +=
+      "  <div class='cake-title' style='margin-top: 15px; font-weight: bold; color: #f8fafc; font-size: 1.2rem;'>" +
+      fullName +
+      "</div>";
+    htmlInterno +=
+      "  <div class='cake-desc' style='font-size: 13px; color: #94a3b8; margin: 8px 0; line-height: 1.4;'>" +
+      detalheBolo +
+      "</div>";
+    htmlInterno += "</div>";
+    htmlInterno +=
+      "<div class='cake-footer' style='display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;'>";
+    htmlInterno +=
+      "  <span class='cake-price' style='font-weight: bold; color: #f43f5e; font-size: 1.3rem;'>R$ " +
+      price +
+      "</span>";
+    htmlInterno +=
+      "  <button class='btn-buy' data-name='" +
+      fullName +
+      "' data-price='" +
+      price +
+      "' style='background: #e11d48; color: white; border-radius: 6px; padding: 8px 16px; border: none; cursor: pointer; font-weight: bold;'>Adicionar</button>";
+    htmlInterno += "</div>";
+
+    card.innerHTML = htmlInterno;
+    cakeContainer.appendChild(card);
+  });
 }
 
 // =========================================================================
@@ -449,6 +515,21 @@ document.addEventListener("click", (e) => {
   if (btnPlus) {
     const nome = btnPlus.getAttribute("data-name");
     if (nome) alterarQuantidadeItem(nome, "aumentar");
+    return;
+  }
+
+  // ☀️ Alternar Tema Claro / Escuro
+  const btnTema = e.target.closest("#themeToggleBtn");
+  if (btnTema) {
+    document.body.classList.toggle("light-theme");
+    const novoTema = document.body.classList.contains("light-theme")
+      ? "light"
+      : "dark";
+    localStorage.setItem("cr_theme", novoTema);
+    mostrarToast(
+      `Tema alterado para ${novoTema === "light" ? "Claro" : "Escuro"}!`,
+      "sucesso",
+    );
     return;
   }
 
