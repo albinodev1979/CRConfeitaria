@@ -1,4 +1,4 @@
-console.log("app.js v13.0 - Sistema de Carrinho e Login Totalmente Integrados");
+console.log("app.js v14.0 - Sistema Totalmente Corrigido e Sem Erros");
 
 // =========================================================================
 // 1. VARIÁVEIS DE ESTADO GLOBAL
@@ -13,20 +13,20 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarVitrineReal();
   carregarDadosLembrados();
   configurarOlhinhoSenha();
-  updateCartUI(); // Inicializa o contador do carrinho zerado
+  updateCartUI();
 });
 
-// 🍰 BUSCA REAL DOS BOLOS NO POSTGRESQL (RENDER)
+// BUSCA REAL DOS BOLOS NO POSTGRESQL (RENDER)
 async function carregarVitrineReal() {
   try {
     const response = await fetch("/api/produtos");
     if (!response.ok) throw new Error("Erro na resposta da API");
 
     const bolosDoBanco = await response.json();
-    console.log("🍰 BOLOS CARREGADOS DO BANCO COM SUCESSO:", bolosDoBanco);
+    console.log("BOLOS CARREGADOS DO BANCO COM SUCESSO:", bolosDoBanco);
     generateCakeCatalog(bolosDoBanco);
   } catch (error) {
-    console.error("❌ Erro ao carregar a vitrine de bolos:", error);
+    console.error("Erro ao carregar a vitrine de bolos:", error);
   }
 }
 
@@ -174,9 +174,7 @@ async function finalizarPedidoCompleto() {
 
     renderizarHistoricoPedidos();
 
-    // 🏆 ADICIONADO: Número oficial da sua confeitaria com DDD configurado corretamente
     const numeroLojaOficial = "5581992185775";
-
     const mensagemFormatada = encodeURIComponent(message);
     window.open(
       `https://wa.me{numeroLojaOficial}?text=${mensagemFormatada}`,
@@ -321,11 +319,11 @@ async function renderizarHistoricoPedidos() {
             </p>{" "}
             <p style="margin: 0 0 5px 0;">
               <strong>Status:</strong>{" "}
-              <span style="background:#334155; color:#f43f5e; padding:2px 8px; border-radius:4px; font-size:12px;">
+              <span style="background: #334155; color: #f43f5e; padding: 2px 8px; border-radius: 4px; font-size: 12px;">
                 ${pedido.status_pedido || "Aguardando"}
               </span>
             </p>{" "}
-            <p style="margin: 5px 0 0 0; font-weight:bold; color:#22c55e;">
+            <p style="margin: 5px 0 0 0; font-weight: bold; color: #f43f5e;">
               Total: R$ ${parseFloat(pedido.valor_total || 0).toFixed(2)}
             </p>{" "}
           </div>
@@ -344,11 +342,11 @@ document.addEventListener("click", (e) => {
   if (e.target && e.target.classList.contains("btn-buy")) {
     const nome = e.target.getAttribute("data-name");
     const preco = e.target.getAttribute("data-price");
-    addToCart(nome, preco); // Envia para o carrinho local sem pular etapas!
+    addToCart(nome, preco);
     return;
   }
   if (e.target && e.target.id === "cartToggleBtn") {
-    finalizarPedidoCompleto(); // Envia todos os produtos juntos ao clicar no botão do carrinho!
+    finalizarPedidoCompleto();
     return;
   }
   if (e.target && e.target.classList.contains("nav-btn")) {
@@ -391,7 +389,7 @@ function mostrarToast(mensagem, tipo = "sucesso") {
   if (antigo) antigo.remove();
   const toast = document.createElement("div");
   toast.id = "toast-sistema";
-  toast.textContent = message || mensagem;
+  toast.textContent = mensagem;
   toast.style =
     "position:fixed; bottom:20px; right:20px; padding:12px 20px; border-radius:8px; color:#fff; font-weight:bold; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.25); font-size:14px;";
   toast.style.backgroundColor = tipo === "sucesso" ? "#22c55e" : "#ef4444";
