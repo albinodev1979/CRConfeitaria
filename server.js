@@ -19,6 +19,9 @@ app.use(express.json());
 // Permite que o navegador acesse os arquivos da pasta assets publicamente
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
+app.use('/assets', express.static(path.join(__dirname, 'server/assets')));
+
+
 // 🌟 MUDANÇA AQUI: Removeu o ".." porque os arquivos HTML estão na mesma pasta raiz do server.js no Git
 const pastaPublica = path.resolve(__dirname);
 app.use(express.static(pastaPublica));
