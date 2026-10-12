@@ -1,4 +1,4 @@
-console.log("app.js v12 Final - Fluxo Completo do Carrinho Restaurado");
+console.log("app.js v12.1 - Sistema Unificado e Sem Cortes de Sintaxe");
 
 // =========================================================================
 // 1. VARIÁVEIS DE ESTADO GLOBAL
@@ -102,7 +102,7 @@ function generateCakeCatalog(cakeFlavors) {
 }
 
 // =========================================================================
-// 5. SISTEMA E REGRAS DO CARRINHO DE COMPRAS (CORRIGIDO)
+// 5. SISTEMA E REGRAS DO CARRINHO DE COMPRAS
 // =========================================================================
 function addToCart(name, price) {
   const existingItem = cart.find((item) => item.name === name);
@@ -121,14 +121,13 @@ function updateCartUI() {
     totalItems += item.qty;
   });
 
-  // Atualiza o número de itens dentro do botão "🛒 Carrinho (X)" no menu superior
   if (cartCount) {
     cartCount.textContent = totalItems;
   }
 }
 
 // =========================================================================
-// 6. FINALIZAR COMPRA: MULTI-ITENS E WHATSAPP DA SUA LOJA
+// 6. FINALIZAR COMPRA: MULTI-ITENS E ENVIO PARA O WHATSAPP
 // =========================================================================
 async function finalizarPedidoCompleto() {
   if (cart.length === 0) {
@@ -147,7 +146,6 @@ async function finalizarPedidoCompleto() {
     itensDoPedidoSimples.push(`${item.qty}x ${item.name}`);
   });
 
-  // Monta a mensagem estruturada para o WhatsApp
   let message = "*🎂 CR CONFEITARIA - NOVO PEDIDO 🎂*\n\n";
   message +=
     "Olá! Gostaria de confirmar a encomenda dos seguintes itens:\n-----------------------------------------\n";
@@ -168,7 +166,6 @@ async function finalizarPedidoCompleto() {
   try {
     mostrarToast("Salvando pedido no histórico...", "sucesso");
 
-    // Grava o pedido completo na tabela do PostgreSQL
     await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -177,8 +174,7 @@ async function finalizarPedidoCompleto() {
 
     renderizarHistoricoPedidos();
 
-    // 🏆 COLOQUE O NÚMERO REAL DA SUA LOJA COM DDD AQUI (Substitua os números abaixo mantendo as aspas)
-    // Exemplo: se for de São Paulo: "5511999999999", se for Recife: "5581988888888"
+    // 🏆 COLOQUE O NÚMERO DO WHATSAPP DA SUA CONFEITARIA AQUI:
     const numeroLojaOficial = "5581992185775";
 
     const mensagemFormatada = encodeURIComponent(message);
@@ -187,7 +183,6 @@ async function finalizarPedidoCompleto() {
       "_blank",
     );
 
-    // Limpa o carrinho após o sucesso da compra
     cart = [];
     updateCartUI();
     mostrarToast("Pedido concluído com sucesso!", "sucesso");
@@ -198,7 +193,7 @@ async function finalizarPedidoCompleto() {
 }
 
 // =========================================================================
-// 7. EVENTOS DE AUTENTICAÇÃO (LOGIN E CADASTRO REAIS)
+// 7. EVENTOS DE AUTENTICAÇÃO (LOGIN E CADASTRO CORRIGIDOS)
 // =========================================================================
 if (loginForm) {
   loginForm.addEventListener("submit", async (evento) => {
@@ -239,7 +234,11 @@ if (loginForm) {
         if (rememberMeCheckbox && rememberMeCheckbox.checked) {
           localStorage.setItem("remembered_user", entradaLogin);
           localStorage.setItem("remembered_pass", entradaSenha);
+        } else {
+          localStorage.removeItem("remembered_user");
+          localStorage.removeItem("remembered_pass");
         }
+
         loginForm.reset();
         renderizarHistoricoPedidos();
         carregarVitrineReal();
@@ -322,11 +321,11 @@ async function renderizarHistoricoPedidos() {
             </p>{" "}
             <p style="margin: 0 0 5px 0;">
               <strong>Status:</strong>{" "}
-              <span style="background:#fff3cd; color:#856404; padding:2px 6px; border-radius:4px; font-size:12px;">
+              <span style="background:#334155; color:#f43f5e; padding:2px 6px; border-radius:4px; font-size:12px;">
                 ${pedido.status_pedido || "Aguardando"}
               </span>
             </p>{" "}
-            <p style="margin: 5px 0 0 0; font-weight:bold; color:#f43f5e;">
+            <p style="margin: 5px 0 0 0; font-weight:bold; color:#22c55e;">
               Total: R$ ${parseFloat(pedido.valor_total || 0).toFixed(2)}
             </p>{" "}
           </div>
@@ -342,16 +341,14 @@ async function renderizarHistoricoPedidos() {
 // 9. CENTRAL DE CLIQUES GLOBAL (ESCUTADOR DE BOTÕES)
 // =========================================================================
 document.addEventListener("click", (e) => {
-  // CLIQUE EM ADICIONAR AO CARRINHO (VITRINE)
   if (e.target && e.target.classList.contains("btn-buy")) {
     const nome = e.target.getAttribute("data-name");
     const preco = e.target.getAttribute("data-price");
-    addToCart(nome, preco); // Envia o item para o carrinho local, em vez de abrir o zap na hora!
+    addToCart(nome, preco);
     return;
   }
-  // CLIQUE NO BOTÃO DO CARRINHO DO MENU SUPERIOR OU FINALIZAR
   if (e.target && e.target.id === "cartToggleBtn") {
-    finalizarPedidoCompleto(); // Dispara o fechamento do carrinho e o envio completo!
+    finalizarPedidoCompleto();
     return;
   }
   if (e.target && e.target.classList.contains("nav-btn")) {
@@ -396,7 +393,7 @@ function mostrarToast(mensagem, tipo = "sucesso") {
   toast.id = "toast-sistema";
   toast.textContent = mensagem;
   toast.style =
-    "position:fixed; bottom:20px; right:20px; padding:12px 20px; border-radius:8px; color:#fff; font-weight:bold; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.25);font-size:14px;";
+    "position:fixed; bottom:20px; right:20px; padding:12px 20px; border-radius:8px; color:#fff; font-weight:bold; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.25); font-size:14px;";
   toast.style.backgroundColor = tipo === "sucesso" ? "#22c55e" : "#ef4444";
   document.body.appendChild(toast);
   setTimeout(() => {
