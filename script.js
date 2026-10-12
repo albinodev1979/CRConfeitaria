@@ -89,50 +89,64 @@ const forgotForm = document.getElementById("forgotForm");
 const formularioDeCadastro = document.getElementById("registerForm");
 
 // =========================================================================
-// 4. GERADOR DE VITRINE DINÂMICO
+// 4. GERADOR DE VITRINE DINÂMICO (BLINDADO)
 // =========================================================================
 function generateCakeCatalog(cakeFlavors) {
-  if (!cakeContainer) return;
-  cakeContainer.innerHTML = "";
+  const containerDeBolos = document.getElementById("cakeContainer");
+  if (!containerDeBolos) {
+    console.error(
+      "Erro: O elemento #cakeContainer não foi encontrado no HTML!",
+    );
+    return;
+  }
+  containerDeBolos.innerHTML = "";
 
   if (!cakeFlavors || cakeFlavors.length === 0) {
-    cakeContainer.innerHTML =
-      '<p class="empty-cart-text">Nenhum bolo disponível no momento.</p>';
+    containerDeBolos.innerHTML =
+      '<p class="empty-cart-text" style="color: #666; text-align: center; width: 100%;">Nenhum bolo disponível no momento no banco de dados.</p>';
     return;
   }
 
   cakeFlavors.forEach((bolo, index) => {
     const itemNumber = index + 1;
-    const price = parseFloat(bolo.preco).toFixed(2);
-    const fullName = bolo.nome + " (#" + itemNumber + ")";
 
-    const imagemHTML = bolo.imagem_url
-      ? `<img src="${bolo.imagem_url}" alt="${bolo.nome}" class="cake-image-card" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px;">`
-      : `<div class="cake-icon" style="font-size: 3rem; text-align: center; padding: 10px;">🎂</div>`;
+    // 🏆 BLINDAGEM MÁXIMA: Aceita os nomes tanto em português quanto em inglês do banco
+    const tituloBolo =
+      bolo.nome || bolo.name || bolo.title || `Bolo Artesanal #${itemNumber}`;
+    const valorBolo = bolo.preco || bolo.price || bolo.value || 0;
+    const detalheBolo =
+      bolo.descricao ||
+      bolo.description ||
+      bolo.desc ||
+      "Bolo artesanal confeccionado com ingredientes premium selecionados.";
+
+    const price = parseFloat(valorBolo).toFixed(2);
+    const fullName = tituloBolo + " (#" + itemNumber + ")";
+
+    const imagemHTML = `<div class="cake-icon" style="font-size: 4rem; text-align: center; padding: 20px 0; background: #f8fafc; border-radius: 8px;">🎂</div>`;
 
     const card = document.createElement("div");
     card.className = "cake-card";
     card.innerHTML =
       '<span class="cake-badge">Premium</span>' +
       imagemHTML +
-      '<div class="cake-title" style="margin-top: 10px;">' +
+      '<div class="cake-title" style="margin-top: 15px; font-weight: bold; color: #333;">' +
       fullName +
       "</div>" +
-      '<div class="cake-desc">' +
-      (bolo.descricao ||
-        "Bolo artesanal confeccionado com ingredientes premium.") +
+      '<div class="cake-desc" style="font-size: 13px; color: #666; margin: 8px 0;">' +
+      detalheBolo +
       "</div>" +
-      '<div class="cake-footer">' +
-      '<span class="cake-price">R$ ' +
+      '<div class="cake-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">' +
+      '<span class="cake-price" style="font-weight: bold; color: #e11d48;">R\$ ' +
       price +
       "</span>" +
       '<button class="btn-buy" data-name="' +
       fullName +
       '" data-price="' +
       price +
-      '">Adicionar</button>' +
+      '" style="background: #e11d48; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Adicionar</button>' +
       "</div>";
-    cakeContainer.appendChild(card);
+    containerDeBolos.appendChild(card);
   });
 }
 
