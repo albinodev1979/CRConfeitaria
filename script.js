@@ -441,7 +441,7 @@ async function excluirPedido(idPedido) {
 }
 
 // =========================================================================
-// 9. CENTRAL DE CLIQUES GLOBAL ÚNICA (SEGURANÇA CONTRA DUPLICAÇÃO)
+// 9. CENTRAL DE CLIQUES GLOBAL (ESCUTADOR DE BOTÕES)
 // =========================================================================
 document.addEventListener("click", (e) => {
   // 1. Botão Mais (+) do Carrinho
@@ -468,7 +468,7 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // 4. Botão Adicionar da Vitrine (Adiciona exatamente 1 por clique)
+  // 4. Botão Adicionar da Vitrine
   const btnBuy = e.target.closest(".btn-buy");
   if (btnBuy) {
     const nome = btnBuy.getAttribute("data-name");
@@ -542,71 +542,6 @@ document.addEventListener("click", (e) => {
     return;
   }
 });
-
-// 5. Botão de Finalizar no WhatsApp
-const btnWhatsapp =
-  e.target.closest("#checkoutWhatsAppBtn") ||
-  (e.target.textContent && e.target.textContent.includes("WhatsApp"));
-if (btnWhatsapp) {
-  finalizarPedidoCompleto();
-  return;
-}
-
-// 6. Abrir gaveta do carrinho
-const toggleBtn = e.target.closest("#cartToggleBtn");
-if (toggleBtn) {
-  const drawer = document.getElementById("cartDrawer");
-  if (drawer) drawer.classList.add("open");
-  renderizarCarrinhoVisual();
-  return;
-}
-
-// 7. Fechar gaveta do carrinho
-const closeBtn =
-  e.target.closest("#closeCartBtn") || e.target.closest(".close-cart-btn");
-if (closeBtn) {
-  const drawer = document.getElementById("cartDrawer");
-  if (drawer) drawer.classList.remove("open");
-  return;
-}
-
-// 8. Navegação do Painel (Abas)
-const navBtn = e.target.closest(".nav-btn");
-if (navBtn) {
-  const targetPanelId = navBtn.getAttribute("data-target");
-  if (!targetPanelId) return;
-  document
-    .querySelectorAll(".nav-btn")
-    .forEach((b) => b.classList.remove("active"));
-  document
-    .querySelectorAll(".dashboard-panel")
-    .forEach((p) => p.classList.remove("active"));
-  navBtn.classList.add("active");
-  const targetPanel = document.getElementById(targetPanelId);
-  if (targetPanel) targetPanel.classList.add("active");
-  return;
-}
-
-// 9. Alternar telas de Registo / Login / Logout
-if (e.target && e.target.id === "openRegister") {
-  e.preventDefault();
-  if (loginBox) loginBox.style.display = "none";
-  if (registerBox) registerBox.style.display = "block";
-  return;
-}
-
-if (e.target && e.target.id === "openLogin") {
-  e.preventDefault();
-  if (registerBox) registerBox.style.display = "none";
-  if (loginBox) loginBox.style.display = "block";
-  return;
-}
-
-if (e.target && e.target.id === "logoutBtn") {
-  if (welcomeBox) welcomeBox.style.display = "none";
-  if (loginBox) loginBox.style.display = "block";
-  return;
-} // FIM DO OUVINTE GLOBAL DE CLIQUES
 
 // =========================================================================
 // 10. ROTINAS AUXILIARES (TOASTS, OLHINHO E SESSÃO)
