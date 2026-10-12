@@ -10,10 +10,10 @@ let cart = []; // Array que armazena os bolos adicionados pelo cliente
 // =========================================================================
 document.addEventListener("DOMContentLoaded", () => {
   renderizarHistoricoPedidos();
-  carregarVitrineReal();
+  carregarVitrineReal(); 
   carregarDadosLembrados();
   configurarOlhinhoSenha();
-  updateCartUI();
+  updateCartUI(); 
 });
 
 // 🍰 BUSCA REAL DOS BOLOS NO POSTGRESQL (RENDER)
@@ -21,7 +21,7 @@ async function carregarVitrineReal() {
   try {
     const response = await fetch("/api/produtos");
     if (!response.ok) throw new Error("Erro na resposta da API");
-
+    
     const bolosDoBanco = await response.json();
     console.log("🍰 BOLOS CARREGADOS DO BANCO COM SUCESSO:", bolosDoBanco);
     generateCakeCatalog(bolosDoBanco);
@@ -44,7 +44,6 @@ const loginForm = document.getElementById("loginForm");
 const usernameInput = document.getElementById("username");
 const passwordInput = document.getElementById("password");
 const rememberMeCheckbox = document.getElementById("rememberMe");
-
 const cartCount = document.getElementById("cartCount");
 const formularioDeCadastro = document.getElementById("registerForm");
 const forgotModal = document.getElementById("forgotModal");
@@ -59,59 +58,36 @@ function generateCakeCatalog(cakeFlavors) {
   cakeContainer.innerHTML = "";
 
   if (!cakeFlavors || cakeFlavors.length === 0) {
-    cakeContainer.innerHTML =
-      '<p class="empty-cart-text" style="color: #94a3b8; text-align: center; width: 100%;">Nenhum bolo disponível no banco de dados.</p>';
+    cakeContainer.innerHTML = '<p class="empty-cart-text" style="color: #94a3b8; text-align: center; width: 100%;">Nenhum bolo disponível no banco de dados.</p>';
     return;
   }
 
   cakeFlavors.forEach((bolo, index) => {
     const itemNumber = index + 1;
-
-    const tituloBolo =
-      bolo.nome || bolo.name || bolo.title || `Bolo Tradicional #${itemNumber}`;
+    
+    const tituloBolo = bolo.nome || bolo.name || bolo.title || `Bolo Tradicional #${itemNumber}`;
     const valorBolo = bolo.preco || bolo.price || bolo.value || 0;
-    const detalheBolo =
-      bolo.descricao ||
-      bolo.description ||
-      bolo.desc ||
-      "Delicioso bolo artesanal feito com receitas exclusivas.";
-
+    const detalheBolo = bolo.descricao || bolo.description || bolo.desc || "Delicioso bolo artesanal feito com receitas exclusivas.";
+    
     const price = parseFloat(valorBolo).toFixed(2);
     const fullName = tituloBolo + " (#" + itemNumber + ")";
-
+    
     const imagemHTML = `<div class="cake-icon" style="font-size: 3.5rem; text-align: center; padding: 25px 0; background: #1e293b; border-radius: 8px; user-select: none;">🎂</div>`;
 
     const card = document.createElement("div");
     card.className = "cake-card";
-    card.style =
-      "background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 12px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; position: relative; margin-bottom: 15px; color: white;";
-
+    card.style = "background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 12px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; position: relative; margin-bottom: 15px; color: white;";
+    
     let htmlInterno = "";
     htmlInterno += "<div style='position: relative;'>";
-    htmlInterno +=
-      "  <span style='position: absolute; top: 10px; left: 10px; background: #e11d48; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2;'>Premium</span>";
+    htmlInterno += "  <span style='position: absolute; top: 10px; left: 10px; background: #e11d48; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2;'>Premium</span>";
     htmlInterno += "  " + imagemHTML;
-    htmlInterno +=
-      "  <div class='cake-title' style='margin-top: 15px; font-weight: bold; color: #f8fafc; font-size: 1.2rem;'>" +
-      fullName +
-      "</div>";
-    htmlInterno +=
-      "  <div class='cake-desc' style='font-size: 13px; color: #94a3b8; margin: 8px 0; line-height: 1.4;'>" +
-      detalheBolo +
-      "</div>";
+    htmlInterno += "  <div class='cake-title' style='margin-top: 15px; font-weight: bold; color: #f8fafc; font-size: 1.2rem;'>" + fullName + "</div>";
+    htmlInterno += "  <div class='cake-desc' style='font-size: 13px; color: #94a3b8; margin: 8px 0; line-height: 1.4;'>" + detalheBolo + "</div>";
     htmlInterno += "</div>";
-    htmlInterno +=
-      "<div class='cake-footer' style='display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;'>";
-    htmlInterno +=
-      "  <span class='cake-price' style='font-weight: bold; color: #f43f5e; font-size: 1.3rem;'>R$ " +
-      price +
-      "</span>";
-    htmlInterno +=
-      "  <button class='btn-buy' data-name='" +
-      fullName +
-      "' data-price='" +
-      price +
-      "' style='background: #e11d48; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;'>Adicionar</button>";
+    htmlInterno += "<div class='cake-footer' style='display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;'>";
+    htmlInterno += "  <span class='cake-price' style='font-weight: bold; color: #f43f5e; font-size: 1.3rem;'>R$ " + price + "</span>";
+    htmlInterno += "  <button class='btn-buy' data-name='" + fullName + "' data-price='" + price + "' style='background: #e11d48; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;'>Adicionar</button>";
     htmlInterno += "</div>";
 
     card.innerHTML = htmlInterno;
@@ -164,44 +140,39 @@ async function finalizarPedidoCompleto() {
   });
 
   let message = "*🎂 CR CONFEITARIA - NOVO PEDIDO 🎂*\n\n";
-  message +=
-    "Olá! Gostaria de confirmar a encomenda dos seguintes itens:\n-----------------------------------------\n";
+  message += "Olá! Gostaria de confirmar a encomenda dos seguintes itens:\n-----------------------------------------\n";
   message += listaDeProdutos;
   message += "-----------------------------------------\n";
   message += `💰 *Total do Pedido: R$ ${valorTotalCalculado.toFixed(2)}*\n\n`;
-  message +=
-    "Por favor, envie as instruções de pagamento e o prazo para retirada!";
+  message += "Por favor, envie as instruções de pagamento e o prazo para retirada!";
 
   const dadosParaOBanco = {
     id_pedido: "#" + Math.floor(100000 + Math.random() * 900000),
     data_hora: new Date().toLocaleString("pt-BR"),
     descricao_itens: itensDoPedidoSimples.join(", "),
     status_pedido: "Aguardando Confirmação",
-    valor_total: parseFloat(valorTotalCalculado.toFixed(2)),
+    valor_total: parseFloat(valorTotalCalculado.toFixed(2))
   };
 
   try {
     mostrarToast("Salvando pedido no histórico...", "sucesso");
-
+    
     await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dadosParaOBanco),
+      body: JSON.stringify(dadosParaOBanco)
     });
 
     renderizarHistoricoPedidos();
-
-    // 🏆 CORREÇÃO: URL montada perfeitamente com a barra '/' obrigatória após o wa.me
-    const numeroLojaOficial = "5581992185775";
+    
+    const numeroLojaOficial = "5581992185775"; 
     const mensagemFormatada = encodeURIComponent(message);
-    window.open(
-      "https://wa.me" + numeroLojaOficial + "?text=" + mensagemFormatada,
-      "_blank",
-    );
+    window.open("https://wa.me/" + numeroLojaOficial + "?text=" + mensagemFormatada, "_blank");
 
     cart = [];
     updateCartUI();
     mostrarToast("Pedido concluído com sucesso!", "sucesso");
+
   } catch (e) {
     console.error(e);
     mostrarToast("Erro ao processar o checkout no servidor.", "erro");
@@ -213,8 +184,8 @@ async function finalizarPedidoCompleto() {
 // =========================================================================
 if (loginForm) {
   loginForm.addEventListener("submit", async (evento) => {
-    evento.preventDefault();
-
+    evento.preventDefault(); 
+    
     const entradaLogin = usernameInput ? usernameInput.value.trim() : "";
     const entradaSenha = passwordInput ? passwordInput.value.trim() : "";
 
@@ -227,12 +198,9 @@ if (loginForm) {
       const resposta = await fetch("/api/usuarios/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          loginIdentificador: entradaLogin,
-          senha: entradaSenha,
-        }),
+        body: JSON.stringify({ loginIdentificador: entradaLogin, senha: entradaSenha })
       });
-
+      
       const resultado = await resposta.json();
 
       if (resposta.ok && resultado.sucesso) {
@@ -242,11 +210,11 @@ if (loginForm) {
 
         const user = resultado.usuario || {};
         const nomeFinal = user.username || user.nome || "Usuário";
-
+        
         if (userGreeting) userGreeting.textContent = "Olá, " + nomeFinal;
         if (profileUser) profileUser.textContent = nomeFinal;
         if (profileEmail) profileEmail.textContent = user.email || entradaLogin;
-
+        
         if (rememberMeCheckbox && rememberMeCheckbox.checked) {
           localStorage.setItem("remembered_user", entradaLogin);
           localStorage.setItem("remembered_pass", entradaSenha);
@@ -266,6 +234,7 @@ if (loginForm) {
     }
   });
 }
+
 if (formularioDeCadastro) {
   formularioDeCadastro.addEventListener("submit", async (evento) => {
     evento.preventDefault();
@@ -273,17 +242,19 @@ if (formularioDeCadastro) {
     const inputEmail = document.getElementById("regEmail");
     const inputPass = document.getElementById("regPassword");
     if (!inputUser || !inputEmail || !inputPass) return;
+
     const dadosDoCadastro = {
       username: inputUser.value.trim(),
       email: inputEmail.value.trim(),
       senha: inputPass.value.trim(),
-      telefone: "",
+      telefone: ""
     };
+
     try {
       const resposta = await fetch("/api/usuarios/cadastro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(dadosDoCadastro),
+        body: JSON.stringify(dadosDoCadastro)
       });
       const resultado = await resposta.json();
       if (resposta.ok && resultado.sucesso) {
@@ -301,55 +272,43 @@ if (formularioDeCadastro) {
     }
   });
 }
+
 // =========================================================================
 // 8. HISTÓRICO DE PEDIDOS (POSTGRESQL REVISADO)
 // =========================================================================
 async function renderizarHistoricoPedidos() {
   const container = document.getElementById("ordersContainer");
   if (!container) return;
+  
   try {
     const resposta = await fetch("/api/pedidos");
     const pedidosDoBanco = await resposta.json();
+    
     if (!pedidosDoBanco || pedidosDoBanco.length === 0) {
-      container.innerHTML = "Você ainda não realizou nenhum pedido.";
+      container.innerHTML = 'Você ainda não realizou nenhum pedido.';
       return;
     }
+    
     const total = pedidosDoBanco.length;
     let htmlPedidos = "";
+    
     pedidosDoBanco.forEach((pedido, indice) => {
       const textoItens = pedido.descricao_itens || "1x Bolo Selecionado";
-      // 🏆 RESTAURADO: Estrutura HTML limpa para desenhar os cartões de histórico no dashboard
-      htmlPedidos += (
-        <div
-          class="order-card"
-          style="border: 1px solid #334155; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #1e293b; color: #f8fafc; text-align: left;"
-        >
-          {" "}
-          <h4 style="margin: 0 0 5px 0; color: #f8fafc;">
-            Pedido ${pedido.id_pedido || "#000000"} (${total - indice} de $
-            {total})
-          </h4>{" "}
-          <p style="font-size: 12px; color: #94a3b8; margin: 0 0 8px 0;">
-            ${pedido.data_hora || ""}
-          </p>{" "}
-          <p style="margin: 0 0 5px 0;">
-            <strong>Itens:</strong> ${textoItens}
-          </p>{" "}
-          <p style="margin: 0 0 5px 0;">
-            <strong>Status:</strong>{" "}
-            <span style="background:#334155; color:#f43f5e; padding:2px 8px; border-radius:4px; font-size:12px;">
-              ${pedido.status_pedido || "Aguardando"}
-            </span>
-          </p>{" "}
-          <p style="margin: 5px 0 0 0; font-weight:bold; color:#22c55e;">
-            Total: R$ ${parseFloat(pedido.valor_total || 0).toFixed(2)}
-          </p>{" "}
+      
+      htmlPedidos += `
+        <div class="order-card" style="border: 1px solid #334155; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #1e293b; color: #f8fafc; text-align: left;">
+          <h4 style="margin: 0 0 5px 0; color: #f8fafc;">Pedido ${pedido.id_pedido || '#000000'} (${total - indice} de ${total})</h4>
+          <p style="font-size: 12px; color: #94a3b8; margin: 0 0 8px 0;">${pedido.data_hora || ''}</p>
+          <p style="margin: 0 0 5px 0;"><strong>Itens:</strong> ${textoItens}</p>
+          <p style="margin: 0 0 5px 0;"><strong>Status:</strong> <span style="background:#334155; color:#f43f5e; padding:2px 8px; border-radius:4px; font-size:12px;">${pedido.status_pedido || 'Aguardando'}</span></p>
+          <p style="margin: 5px 0 0 0; font-weight:bold; color:#22c55e;">Total: R$ ${parseFloat(pedido.valor_total || 0).toFixed(2)}</p>
         </div>
-      );
+      `;
     });
+    
     container.innerHTML = htmlPedidos;
   } catch (erro) {
-    container.innerHTML = "Erro ao carregar o histórico de compras.";
+    container.innerHTML = 'Erro ao carregar o histórico de compras.';
   }
 }
 
@@ -370,12 +329,8 @@ document.addEventListener("click", (e) => {
   if (e.target && e.target.classList.contains("nav-btn")) {
     const targetPanelId = e.target.getAttribute("data-target");
     if (!targetPanelId) return;
-    document
-      .querySelectorAll(".nav-btn")
-      .forEach((b) => b.classList.remove("active"));
-    document
-      .querySelectorAll(".dashboard-panel")
-      .forEach((p) => p.classList.remove("active"));
+    document.querySelectorAll(".nav-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".dashboard-panel").forEach((p) => p.classList.remove("active"));
     e.target.classList.add("active");
     const targetPanel = document.getElementById(targetPanelId);
     if (targetPanel) targetPanel.classList.add("active");
@@ -399,6 +354,7 @@ document.addEventListener("click", (e) => {
     return;
   }
 });
+
 // =========================================================================
 // 10. ROTINAS AUXILIARES (TOASTS, OLHINHO E SESSÃO)
 // =========================================================================
@@ -408,14 +364,12 @@ function mostrarToast(mensagem, tipo = "sucesso") {
   const toast = document.createElement("div");
   toast.id = "toast-sistema";
   toast.textContent = mensagem;
-  toast.style =
-    "position:fixed; bottom:20px; right:20px; padding:12px 20px; border-radius:8px; color:#fff; font-weight:bold; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.25); font-size:14px;";
+  toast.style = "position:fixed; bottom:20px; right:20px; padding:12px 20px; border-radius:8px; color:#fff; font-weight:bold; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.25); font-size:14px;";
   toast.style.backgroundColor = tipo === "sucesso" ? "#22c55e" : "#ef4444";
   document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
+  setTimeout(() => { toast.remove(); }, 3000);
 }
+
 function carregarDadosLembrados() {
   const usuarioSalvo = localStorage.getItem("remembered_user");
   const senhaSalva = localStorage.getItem("remembered_pass");
@@ -424,15 +378,14 @@ function carregarDadosLembrados() {
     passwordInput.value = senhaSalva;
     passwordInput.type = "password";
   }
-  if (usuarioSalvo && senhaSalva && rememberMeCheckbox)
-    rememberMeCheckbox.checked = true;
+  if (usuarioSalvo && senhaSalva && rememberMeCheckbox) rememberMeCheckbox.checked = true;
 }
+
 function configurarOlhinhoSenha() {
   const toggleLoginPassword = document.getElementById("toggleLoginPassword");
   if (toggleLoginPassword && passwordInput) {
     toggleLoginPassword.onclick = () => {
-      passwordInput.type =
-        passwordInput.type === "password" ? "text" : "password";
+      passwordInput.type = passwordInput.type === "password" ? "text" : "password";
     };
   }
 }
