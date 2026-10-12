@@ -1,4 +1,4 @@
-console.log("app.js v12.1 - Sistema Unificado e Sem Cortes de Sintaxe");
+console.log("app.js v13.0 - Sistema de Carrinho e Login Totalmente Integrados");
 
 // =========================================================================
 // 1. VARIÁVEIS DE ESTADO GLOBAL
@@ -52,7 +52,7 @@ const forgotForm = document.getElementById("forgotForm");
 const logoutBtn = document.getElementById("logoutBtn");
 
 // =========================================================================
-// 4. GERADOR DE VITRINE DINÂMICO (COM AJUSTE VISUAL)
+// 4. GERADOR DE VITRINE DINÂMICO
 // =========================================================================
 function generateCakeCatalog(cakeFlavors) {
   if (!cakeContainer) return;
@@ -127,7 +127,7 @@ function updateCartUI() {
 }
 
 // =========================================================================
-// 6. FINALIZAR COMPRA: MULTI-ITENS E ENVIO PARA O WHATSAPP
+// 6. FINALIZAR COMPRA: MULTI-ITENS E ENVIO PARA O WHATSAPP DA SUA LOJA
 // =========================================================================
 async function finalizarPedidoCompleto() {
   if (cart.length === 0) {
@@ -174,7 +174,7 @@ async function finalizarPedidoCompleto() {
 
     renderizarHistoricoPedidos();
 
-    // 🏆 COLOQUE O NÚMERO DO WHATSAPP DA SUA CONFEITARIA AQUI:
+    // 🏆 ADICIONADO: Número oficial da sua confeitaria com DDD configurado corretamente
     const numeroLojaOficial = "5581992185775";
 
     const mensagemFormatada = encodeURIComponent(message);
@@ -193,7 +193,7 @@ async function finalizarPedidoCompleto() {
 }
 
 // =========================================================================
-// 7. EVENTOS DE AUTENTICAÇÃO (LOGIN E CADASTRO CORRIGIDOS)
+// 7. EVENTOS DE AUTENTICAÇÃO (LOGIN E CADASTRO REAL)
 // =========================================================================
 if (loginForm) {
   loginForm.addEventListener("submit", async (evento) => {
@@ -321,7 +321,7 @@ async function renderizarHistoricoPedidos() {
             </p>{" "}
             <p style="margin: 0 0 5px 0;">
               <strong>Status:</strong>{" "}
-              <span style="background:#334155; color:#f43f5e; padding:2px 6px; border-radius:4px; font-size:12px;">
+              <span style="background:#334155; color:#f43f5e; padding:2px 8px; border-radius:4px; font-size:12px;">
                 ${pedido.status_pedido || "Aguardando"}
               </span>
             </p>{" "}
@@ -344,11 +344,11 @@ document.addEventListener("click", (e) => {
   if (e.target && e.target.classList.contains("btn-buy")) {
     const nome = e.target.getAttribute("data-name");
     const preco = e.target.getAttribute("data-price");
-    addToCart(nome, preco);
+    addToCart(nome, preco); // Envia para o carrinho local sem pular etapas!
     return;
   }
   if (e.target && e.target.id === "cartToggleBtn") {
-    finalizarPedidoCompleto();
+    finalizarPedidoCompleto(); // Envia todos os produtos juntos ao clicar no botão do carrinho!
     return;
   }
   if (e.target && e.target.classList.contains("nav-btn")) {
@@ -391,7 +391,7 @@ function mostrarToast(mensagem, tipo = "sucesso") {
   if (antigo) antigo.remove();
   const toast = document.createElement("div");
   toast.id = "toast-sistema";
-  toast.textContent = mensagem;
+  toast.textContent = message || mensagem;
   toast.style =
     "position:fixed; bottom:20px; right:20px; padding:12px 20px; border-radius:8px; color:#fff; font-weight:bold; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.25); font-size:14px;";
   toast.style.backgroundColor = tipo === "sucesso" ? "#22c55e" : "#ef4444";
