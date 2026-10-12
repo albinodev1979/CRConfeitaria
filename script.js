@@ -431,6 +431,146 @@ function renderizarCarrinhoVisual() {
 }
 
 // =========================================================================
+// CONTROLE DE QUANTIDADE E REMOÇÃO NO CARRINHO
+// =========================================================================
+function alterarQuantidadeItem(nomeProduto, acao) {
+  const item = cart.find((i) => i.name === nomeProduto);
+  if (!item) return;
+
+  if (acao === "aumentar") {
+    item.qty++;
+  } else if (acao === "diminuir") {
+    item.qty--;
+    if (item.qty <= 0) {
+      cart = cart.filter((i) => i.name !== nomeProduto);
+    }
+  } else if (acao === "remover") {
+    cart = cart.filter((i) => i.name !== nomeProduto);
+  }
+
+  updateCartUI();
+}
+
+// =========================================================================
+// CENTRAL DE CLIQUES GLOBAL CORRIGIDA E ROBUSTA
+// =========================================================================
+document.addEventListener("click", (e) => {
+  const target = e.target;
+  if (!target) return;
+
+  // 1. Botão Mais (+)
+  if (
+    target.classList.contains("btn-cart-plus") ||
+    target.matches(".cart-item-card button:nth-child(3)")
+  ) {
+    const nome = target.getAttribute("data-name");
+    if (nome) alterarQuantidadeItem(nome, "aumentar");
+    return;
+  }
+
+  // 2. Botão Menos (-)
+  if (
+    target.classList.contains("btn-cart-minus") ||
+    target.matches(".cart-item-card button:nth-child(1)")
+  ) {
+    const nome = target.getAttribute("data-name");
+    if (nome) alterarQuantidadeItem(nome, "diminuir");
+    return;
+  }
+
+  // 3. Botão Lixeira / Remover
+  if (
+    target.classList.contains("btn-cart-remove") ||
+    target.textContent.includes("🗑️")
+  ) {
+    const nome = target.getAttribute("data-name");
+    if (nome) alterarQuantidadeItem(nome, "remover");
+    return;
+  }
+
+  // 4. Botão de Finalizar no WhatsApp (Aceita qualquer ID ou texto parecido)
+  if (
+    target.id === "checkoutWhatsAppBtn" ||
+    (target.id === "cartToggleBtn" && target.closest(".cart-drawer-footer")) ||
+    target.textContent.includes("WhatsApp")
+  ) {
+    // Se o clique foi no botão de abrir o carrinho, não finaliza direto
+    if (target.id === "cartToggleBtn" && !target.closest(".cart-drawer")) {
+      const drawer = document.getElementById("cartDrawer");
+      if (drawer) drawer.classList.add("open");
+      renderizarCarrinhoVisual();
+      return;
+    }
+
+    // Se for o botão de checkout
+    finalizarPedidoCompleto();
+    return;
+  }
+
+  // 5. Adicionar produto à vitrine
+  if (target.classList.contains("btn-buy")) {
+    const nome = target.getAttribute("data-name");
+    const preco = target.getAttribute("data-price");
+    addToCart(nome, preco);
+    return;
+  }
+
+  // 6. Abrir gaveta do carrinho pelo ícone superior
+  if (target.id === "cartToggleBtn") {
+    const drawer = document.getElementById("cartDrawer");
+    if (drawer) drawer.classList.add("open");
+    renderizarCarrinhoVisual();
+    return;
+  }
+
+  // 7. Fechar gaveta no 'X'
+  if (
+    target.id === "closeCartBtn" ||
+    target.classList.contains("close-cart-btn")
+  ) {
+    const drawer = document.getElementById("cartDrawer");
+    if (drawer) drawer.classList.remove("open");
+    return;
+  }
+
+  // 8. Navegação do Dashboard
+  if (target.classList.contains("nav-btn")) {
+    const targetPanelId = target.getAttribute("data-target");
+    if (!targetPanelId) return;
+    document
+      .querySelectorAll(".nav-btn")
+      .forEach((b) => b.classList.remove("active"));
+    document
+      .querySelectorAll(".dashboard-panel")
+      .forEach((p) => p.classList.remove("active"));
+    target.classList.add("active");
+    const targetPanel = document.getElementById(targetPanelId);
+    if (targetPanel) targetPanel.classList.add("active");
+    return;
+  }
+
+  if (target.id === "openRegister") {
+    e.preventDefault();
+    if (loginBox) loginBox.style.display = "none";
+    if (registerBox) registerBox.style.display = "block";
+    return;
+  }
+
+  if (target.id === "openLogin") {
+    e.preventDefault();
+    if (registerBox) registerBox.style.display = "none";
+    if (loginBox) loginBox.style.display = "block";
+    return;
+  }
+
+  if (target.id === "logoutBtn") {
+    if (welcomeBox) welcomeBox.style.display = "none";
+    if (loginBox) loginBox.style.display = "block";
+    return;
+  }
+});
+
+// =========================================================================
 // EXCLUIR PEDIDO DO HISTÓRICO
 // =========================================================================
 async function excluirPedido(idPedido) {
