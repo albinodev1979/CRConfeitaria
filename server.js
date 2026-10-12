@@ -163,6 +163,39 @@ app.get("/api/pedidos", async (req, res) => {
       }
     });
 
+    // =========================================================================
+    // ROTA PARA EXCLUIR PEDIDO NO BANCO DE DADOS (POSTGRESQL)
+    // =========================================================================
+    app.delete("/api/pedidos/:id", async (req, res) => {
+      const { id } = req.params;
+
+      try {
+        // Remove o '#' caso ele venha junto no ID (ex: #123456 -> 123456)
+        // Se o seu ID no banco já armazena o '#', remova o .replace('#', '')
+        const idLimpo = id.replace("#", "");
+
+        // Exemplo usando pool do PostgreSQL
+        const queryText =
+          "DELETE FROM pedidos WHERE id_pedido = $1 OR id_pedido = $2";
+        const resultado = await pool.query(queryText, [id, `#${idLimpo}`]);
+
+        if (resultado.rowCount === 0) {
+          return res.status(404).json({
+            sucesso: false,
+            erro: "Pedido não encontrado no banco de dados.",
+          });
+        }
+
+        res.json({ sucesso: true, mensagem: "Pedido excluído com sucesso!" });
+      } catch (erro) {
+        console.error("Erro ao excluir pedido no servidor:", erro);
+        res.status(500).json({
+          sucesso: false,
+          erro: "Erro interno ao tentar excluir o pedido.",
+        });
+      }
+    });
+
     res.json(result.rows);
   } catch (erro) {
     console.error("Erro ao buscar no banco:", erro);
