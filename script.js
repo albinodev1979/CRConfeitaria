@@ -1,69 +1,36 @@
-console.log("app.js v8 Final - Totalmente Corrigido e Sem Cortes");
+console.log("app.js v10 Final - Vitrine e Login Corrigidos com Sucesso!");
 
 // =========================================================================
-// 1. VARIÁVEIS DE ESTADO DO CARRINHO E HISTÓRICO
+// 1. VARIÁVEIS DE ESTADO GLOBAL
 // =========================================================================
 let cart = [];
 
 // =========================================================================
-// 2. REQUISIÇÃO DA API NO CARREGAMENTO INICIAL
+// 2. DISPAROS AO CARREGAR A PÁGINA
 // =========================================================================
 document.addEventListener("DOMContentLoaded", () => {
   renderizarHistoricoPedidos();
   carregarVitrineReal();
   carregarDadosLembrados();
+  configurarOlhinhoSenha();
 });
 
-// =========================================================================
-// 4. GERADOR DE VITRINE DINÂMICO
-// =========================================================================
-function generateCakeCatalog(cakeFlavors) {
-  if (!cakeContainer) return;
-  cakeContainer.innerHTML = "";
+// 🍰 BUSCA REAL DOS BOLOS NO POSTGRESQL (RENDER)
+async function carregarVitrineReal() {
+  try {
+    const response = await fetch("/api/produtos");
+    if (!response.ok) throw new Error("Erro na resposta da API");
 
-  if (!cakeFlavors || cakeFlavors.length === 0) {
-    cakeContainer.innerHTML =
-      '<p class="empty-cart-text">Nenhum bolo disponível no momento.</p>';
-    return;
+    const bolosDoBanco = await response.json();
+    console.log("🍰 BOLOS CARREGADOS DO BANCO COM SUCESSO:", bolosDoBanco);
+    generateCakeCatalog(bolosDoBanco);
+  } catch (error) {
+    console.error("❌ Erro ao carregar a vitrine de bolos:", error);
   }
-
-  cakeFlavors.forEach((bolo, index) => {
-    const itemNumber = index + 1;
-    // Garante que o preço seja lido como número mesmo vindo do banco como texto
-    const price = parseFloat(bolo.preco || 0).toFixed(2);
-    const fullName = bolo.nome + " (#" + itemNumber + ")";
-
-    // Força o uso do emoji de bolo para garantir que vai renderizar sem depender de links externos
-    const imagemHTML = `<div class="cake-icon" style="font-size: 4rem; text-align: center; padding: 20px 0; background: #f8fafc; border-radius: 8px;">🎂</div>`;
-
-    const card = document.createElement("div");
-    card.className = "cake-card";
-    card.innerHTML =
-      '<span class="cake-badge">Premium</span>' +
-      imagemHTML +
-      '<div class="cake-title" style="margin-top: 15px; font-weight: bold; color: #333;">' +
-      fullName +
-      "</div>" +
-      '<div class="cake-desc" style="font-size: 13px; color: #666; margin: 8px 0;">' +
-      (bolo.descricao ||
-        "Bolo artesanal confeccionado com ingredientes premium selecionados.") +
-      "</div>" +
-      '<div class="cake-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">' +
-      '<span class="cake-price" style="font-weight: bold; color: #e11d48;">R\$ ' +
-      price +
-      "</span>" +
-      '<button class="btn-buy" data-name="' +
-      fullName +
-      '" data-price="' +
-      price +
-      '" style="background: #e11d48; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Adicionar</button>' +
-      "</div>";
-    cakeContainer.appendChild(card);
-  });
 }
 
 // =========================================================================
-// 3. ELEMENTOS DO DOM (MAPEADOS DO SEU HTML)
+// 3. MAPEAR ELEMENTOS DO DOM (HTML)
 // =========================================================================
 const loginBox = document.getElementById("loginBox");
 const registerBox = document.getElementById("registerBox");
@@ -77,170 +44,127 @@ const usernameInput = document.getElementById("username");
 const passwordInput = document.getElementById("password");
 const rememberMeCheckbox = document.getElementById("rememberMe");
 
-const cartDrawer = document.getElementById("cartDrawer");
-const cartItemsContainer = document.getElementById("cartItemsContainer");
 const cartCount = document.getElementById("cartCount");
-const cartTotalValue = document.getElementById("cartTotalValue");
-const checkoutBtn = document.getElementById("checkoutBtn");
-const logoutBtn = document.getElementById("logoutBtn");
-
+const formularioDeCadastro = document.getElementById("registerForm");
 const forgotModal = document.getElementById("forgotModal");
 const forgotForm = document.getElementById("forgotForm");
-const formularioDeCadastro = document.getElementById("registerForm");
+const logoutBtn = document.getElementById("logoutBtn");
 
 // =========================================================================
-// 4. GERADOR DE VITRINE DINÂMICO (BLINDADO)
+// 4. GERADOR DE VITRINE DINÂMICO
 // =========================================================================
 function generateCakeCatalog(cakeFlavors) {
-  const containerDeBolos = document.getElementById("cakeContainer");
-  if (!containerDeBolos) {
-    console.error(
-      "Erro: O elemento #cakeContainer não foi encontrado no HTML!",
-    );
-    return;
-  }
-  containerDeBolos.innerHTML = "";
+  if (!cakeContainer) return;
+  cakeContainer.innerHTML = "";
 
   if (!cakeFlavors || cakeFlavors.length === 0) {
-    containerDeBolos.innerHTML =
-      '<p class="empty-cart-text" style="color: #666; text-align: center; width: 100%;">Nenhum bolo disponível no momento no banco de dados.</p>';
+    cakeContainer.innerHTML =
+      '<p class="empty-cart-text" style="color: #94a3b8; text-align: center; width: 100%;">Nenhum bolo disponível no banco de dados.</p>';
     return;
   }
 
   cakeFlavors.forEach((bolo, index) => {
     const itemNumber = index + 1;
 
-    // 🏆 BLINDAGEM MÁXIMA: Aceita os nomes tanto em português quanto em inglês do banco
     const tituloBolo =
-      bolo.nome || bolo.name || bolo.title || `Bolo Artesanal #${itemNumber}`;
+      bolo.nome || bolo.name || bolo.title || `Bolo Tradicional #${itemNumber}`;
     const valorBolo = bolo.preco || bolo.price || bolo.value || 0;
     const detalheBolo =
       bolo.descricao ||
       bolo.description ||
       bolo.desc ||
-      "Bolo artesanal confeccionado com ingredientes premium selecionados.";
+      "Delicioso bolo artesanal feito com receitas exclusivas.";
 
     const price = parseFloat(valorBolo).toFixed(2);
     const fullName = tituloBolo + " (#" + itemNumber + ")";
 
-    const imagemHTML = `<div class="cake-icon" style="font-size: 4rem; text-align: center; padding: 20px 0; background: #f8fafc; border-radius: 8px;">🎂</div>`;
+    const imagemHTML =
+      bolo.imagem_url && bolo.imagem_url.startsWith("http")
+        ? `<img src="${bolo.imagem_url}" alt="${tituloBolo}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px;">`
+        : `<div class="cake-icon" style="font-size: 3.5rem; text-align: center; padding: 25px 0; background: #1e293b; border-radius: 8px;">🎂</div>`;
 
     const card = document.createElement("div");
     card.className = "cake-card";
-    card.innerHTML =
-      '<span class="cake-badge">Premium</span>' +
-      imagemHTML +
-      '<div class="cake-title" style="margin-top: 15px; font-weight: bold; color: #333;">' +
-      fullName +
-      "</div>" +
-      '<div class="cake-desc" style="font-size: 13px; color: #666; margin: 8px 0;">' +
-      detalheBolo +
-      "</div>" +
-      '<div class="cake-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">' +
-      '<span class="cake-price" style="font-weight: bold; color: #e11d48;">R\$ ' +
-      price +
-      "</span>" +
-      '<button class="btn-buy" data-name="' +
-      fullName +
-      '" data-price="' +
-      price +
-      '" style="background: #e11d48; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Adicionar</button>' +
-      "</div>";
-    containerDeBolos.appendChild(card);
+    card.style =
+      "background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 12px; text-align: left; display: flex; flex-direction: column; justify-content: space-between;";
+    card.innerHTML = `
+      <div style="position: relative;">
+        <span class="cake-badge" style="position: absolute; top: 10px; left: 10px; background: #e11d48; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2;">Premium</span>
+        ${imagemHTML}
+        <div class="cake-title" style="margin-top: 15px; font-weight: bold; color: #f8fafc; font-size: 1.2rem;">${fullName}</div>
+        <div class="cake-desc" style="font-size: 13px; color: #94a3b8; margin: 8px 0; line-height: 1.4;">${detalheBolo}</div>
+      </div>
+      <div class="cake-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;">
+        <span class="cake-price" style="font-weight: bold; color: #f43f5e; font-size: 1.3rem;">R$ ${price}</span>
+        <button class="btn-buy" data-name="${fullName}" data-price="${price}" style="background: #e11d48; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s;">Adicionar</button>
+      </div>
+    `;
+    cakeContainer.appendChild(card);
   });
 }
 
 // =========================================================================
-// 5. CONTROLES DE MANIPULAÇÃO DO CARRINHO
+// 5. EVENTO DE ENVIO DO FORMULÁRIO DE LOGIN
 // =========================================================================
-function addToCart(name, price) {
-  const existingItem = cart.find((item) => item.name === name);
-  if (existingItem) {
-    existingItem.qty++;
-  } else {
-    cart.push({ name: name, price: price, qty: 1 });
-  }
-  updateCartUI();
-}
+if (loginForm) {
+  loginForm.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
 
-function changeQty(name, amount) {
-  const item = cart.find((item) => item.name === name);
-  if (!item) return;
-  item.qty += amount;
-  if (item.qty <= 0) {
-    cart = cart.filter((i) => i.name !== name);
-  }
-  updateCartUI();
-}
+    const entradaLogin = usernameInput ? usernameInput.value.trim() : "";
+    const entradaSenha = passwordInput ? passwordInput.value.trim() : "";
 
-function updateCartUI() {
-  if (!cartItemsContainer) return;
-  cartItemsContainer.innerHTML = "";
-  let totalItems = 0;
-  let totalPrice = 0;
+    if (!entradaLogin || !entradaSenha) {
+      mostrarToast("Preencha todos os campos!", "erro");
+      return;
+    }
 
-  if (cart.length === 0) {
-    cartItemsContainer.innerHTML =
-      '<p class="empty-cart-text">Seu carrinho está vazio.</p>';
-  } else {
-    cart.forEach((item) => {
-      totalItems += item.qty;
-      totalPrice += item.price * item.qty;
-      const itemRow = document.createElement("div");
-      itemRow.className = "cart-item";
-      itemRow.innerHTML =
-        '<div class="cart-item-info"><h5>' +
-        item.name +
-        "</h5><span>R$ " +
-        (item.price * item.qty).toFixed(2) +
-        "</span></div>" +
-        '<div class="cart-item-actions">' +
-        '<button class="qty-btn" data-name="' +
-        item.name +
-        '" data-amount="-1">-</button>' +
-        '<span class="cart-item-qty">' +
-        item.qty +
-        "</span>" +
-        '<button class="qty-btn" data-name="' +
-        item.name +
-        '" data-amount="1">+</button>' +
-        "</div>";
-      cartItemsContainer.appendChild(itemRow);
-    });
-  }
-  if (cartCount) cartCount.textContent = totalItems;
-  if (cartTotalValue)
-    cartTotalValue.textContent = "R$ " + totalPrice.toFixed(2);
-  if (checkoutBtn) checkoutBtn.disabled = cart.length === 0;
+    try {
+      const resposta = await fetch("/api/usuarios/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          loginIdentificador: entradaLogin,
+          senha: entradaSenha,
+        }),
+      });
+
+      const resultado = await resposta.json();
+
+      if (resposta.ok && resultado.sucesso) {
+        mostrarToast("Bem-vindo de volta! 🎂", "sucesso");
+        if (loginBox) loginBox.style.display = "none";
+        if (welcomeBox) welcomeBox.style.display = "flex";
+
+        const user = resultado.usuario || {};
+        const nomeFinal = user.username || user.nome || "Usuário";
+
+        if (userGreeting) userGreeting.textContent = "Olá, " + nomeFinal;
+        if (profileUser) profileUser.textContent = nomeFinal;
+        if (profileEmail) profileEmail.textContent = user.email || entradaLogin;
+
+        if (rememberMeCheckbox && rememberMeCheckbox.checked) {
+          localStorage.setItem("remembered_user", entradaLogin);
+          localStorage.setItem("remembered_pass", entradaSenha);
+        } else {
+          localStorage.removeItem("remembered_user");
+          localStorage.removeItem("remembered_pass");
+        }
+
+        loginForm.reset();
+        renderizarHistoricoPedidos();
+        carregarVitrineReal();
+      } else {
+        mostrarToast(resultado.erro || "Usuário ou senha incorretos.", "erro");
+      }
+    } catch (erro) {
+      console.error(erro);
+      mostrarToast("Erro interno ao processar a autenticação.", "erro");
+    }
+  });
 }
 
 // =========================================================================
-// 6. SISTEMA DE TOAST NOTIFICATION PROFISSIONAL
-// =========================================================================
-function mostrarToast(mensagem, tipo = "sucesso") {
-  const antigo = document.getElementById("toast-sistema");
-  if (antigo) antigo.remove();
-  const toast = document.createElement("div");
-  toast.id = "toast-sistema";
-  toast.textContent = mensagem;
-  toast.style.position = "fixed";
-  toast.style.bottom = "20px";
-  toast.style.right = "20px";
-  toast.style.padding = "12px 20px";
-  toast.style.borderRadius = "8px";
-  toast.style.color = "#fff";
-  toast.style.fontWeight = "bold";
-  toast.style.zIndex = "9999";
-  toast.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
-  toast.style.backgroundColor = tipo === "sucesso" ? "#22c55e" : "#ef4444";
-  document.body.appendChild(toast);
-  setTimeout(() => {
-    toast.remove();
-  }, 3000);
-}
-
-// =========================================================================
-// 7. MECANISMO DE CADASTRO REAL (POSTGRESQL)
+// 6. EVENTO DE ENVIO DO FORMULÁRIO DE CADASTRO
 // =========================================================================
 if (formularioDeCadastro) {
   formularioDeCadastro.addEventListener("submit", async (evento) => {
@@ -267,6 +191,7 @@ if (formularioDeCadastro) {
       const resultado = await resposta.json();
       if (resposta.ok && resultado.sucesso) {
         mostrarToast("Conta criada com sucesso!", "sucesso");
+        formularioDeCadastro.reset();
         setTimeout(() => {
           if (registerBox) registerBox.style.display = "none";
           if (loginBox) loginBox.style.display = "block";
@@ -281,62 +206,7 @@ if (formularioDeCadastro) {
 }
 
 // =========================================================================
-// 8. MECANISMO DE LOGIN REAL (POSTGRESQL)
-// =========================================================================
-if (loginForm) {
-  loginForm.addEventListener("submit", async (evento) => {
-    evento.preventDefault(); // IMPORTANTE: Impede a tela de piscar e atualizar sozinha!
-
-    const entradaLogin = usernameInput ? usernameInput.value.trim() : "";
-    const entradaSenha = passwordInput ? passwordInput.value.trim() : "";
-
-    if (!entradaLogin || !entradaSenha) {
-      mostrarToast("Preencha todos os campos!", "erro");
-      return;
-    }
-
-    try {
-      const resposta = await fetch("/api/usuarios/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          loginIdentificador: entradaLogin,
-          senha: entradaSenha,
-        }),
-      });
-
-      const resultado = await resposta.json();
-
-      if (resposta.ok && resultado.sucesso) {
-        mostrarToast("Bem-vindo de volta! 🎂", "sucesso");
-        if (loginBox) loginBox.style.display = "none";
-        if (welcomeBox) welcomeBox.style.display = "block";
-
-        const user = resultado.usuario || {};
-        if (userGreeting)
-          userGreeting.textContent = "Olá, " + (user.username || "Usuário");
-        if (profileUser) profileUser.textContent = user.username || "Usuário";
-        if (profileEmail) profileEmail.textContent = user.email || "";
-
-        if (rememberMeCheckbox && rememberMeCheckbox.checked) {
-          localStorage.setItem("remembered_user", entradaLogin);
-          localStorage.setItem("remembered_pass", entradaSenha);
-        }
-
-        loginForm.reset();
-        renderizarHistoricoPedidos();
-      } else {
-        mostrarToast(resultado.erro || "Usuário ou senha incorretos.", "erro");
-      }
-    } catch (erro) {
-      console.error(erro);
-      mostrarToast("Erro interno ao processar o login.", "erro");
-    }
-  });
-}
-
-// =========================================================================
-// 9. HISTÓRICO DE PEDIDOS E INTEGRAÇÃO POSTGRESQL
+// 7. RENDERIZAR HISTÓRICO DE PEDIDOS (POSTGRESQL REAL)
 // =========================================================================
 async function renderizarHistoricoPedidos() {
   const container = document.getElementById("ordersContainer");
@@ -345,90 +215,66 @@ async function renderizarHistoricoPedidos() {
     const resposta = await fetch("/api/pedidos");
     const pedidosDoBanco = await resposta.json();
     if (!pedidosDoBanco || pedidosDoBanco.length === 0) {
-      container.innerHTML = "Você ainda não realizou nenhum pedido.";
+      container.innerHTML =
+        '<p style="color: #94a3b8;">Você ainda não realizou nenhum pedido.</p>';
       return;
     }
     const total = pedidosDoBanco.length;
     container.innerHTML = pedidosDoBanco
       .map((pedido, indice) => {
         const textoItens = pedido.descricao_itens || "1x Bolo Selecionado";
-        // 🏆 CORREÇÃO: Envolvido o HTML em crases válidas para JavaScript Puro
         return `
-          <div class="order-card" style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #fff; text-align: left; color: #333;">
-            <h4>Pedido ${pedido.id_pedido || "#000000"} (${total - indice} de ${total})</h4>
-            <p style="font-size:12px; color:#666;">${pedido.data_hora || ""}</p>
-            <p><strong>Itens:</strong> ${textoItens}</p>
-            <p><strong>Status:</strong> <span style="background:#fff3cd; color:#856404; padding:2px 6px; border-radius:4px;">${pedido.status_pedido || "Aguardando"}</span></p>
-            <p><strong>Total:</strong> R$ ${parseFloat(pedido.valor_total || 0).toFixed(2)}</p>
-          </div>
-        `;
+        <div class="order-card" style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #fff; color: #333;">
+          <h4>Pedido ${pedido.id_pedido || "#000000"} (${total - indice} de ${total})</h4>
+          <p style="font-size:12px; color:#666;">${pedido.data_hora || ""}</p>
+          <p><strong>Itens:</strong> ${textoItens}</p>
+Status: ${pedido.status_pedido || "Aguardando"}
+Total: R$ ${parseFloat(pedido.valor_total || 0).toFixed(2)}
+
+`;
       })
       .join("");
   } catch (erro) {
-    container.innerHTML = "Erro ao carregar o histórico.";
+    container.innerHTML = "Erro ao carregar o histórico de compras.";
   }
 }
-
-async function finalizarPedidoCompleto() {
-  if (!cart || cart.length === 0) return;
-  let itensDoPedidoSimples = [];
-  let valorTotalCalculado = 0;
-  cart.forEach((item) => {
-    valorTotalCalculado += item.price * item.qty;
-    itensDoPedidoSimples.push(item.qty + "x " + item.name);
-  });
+// =========================================================================
+// 8. FINALIZAR COMPRA E DISPARAR LINK WHATSAPP
+// =========================================================================
+async function finalizarPedidoCompleto(nomeBolo, precoBolo) {
   const dadosParaOBanco = {
     id_pedido: "#" + Math.floor(100000 + Math.random() * 900000),
     data_hora: new Date().toLocaleString("pt-BR"),
-    descricao_itens: itensDoPedidoSimples.join(", "),
+    descricao_itens: "1x " + nomeBolo,
     status_pedido: "Aguardando Confirmação",
-    valor_total: parseFloat(valorTotalCalculado.toFixed(2)),
+    valor_total: parseFloat(precoBolo),
   };
   try {
+    mostrarToast("Enviando pedido para o sistema...", "sucesso");
     await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dadosParaOBanco),
     });
-    cart = [];
-    updateCartUI();
     renderizarHistoricoPedidos();
-    if (cartDrawer) cartDrawer.classList.remove("open");
-    mostrarToast("Pedido enviado com sucesso!", "sucesso");
+    mostrarToast("Pedido salvo! Abrindo WhatsApp...", "sucesso");
+    let message = `*🎂 CR CONFEITARIA - NOVO PEDIDO *\n\nEncomenda de: *${nomeBolo}*\nTotal: *R$ ${parseFloat(precoBolo).toFixed(2)}*\n\nAguardando instruções de pagamento!`;
+    const mensagemFormatada = encodeURIComponent(message);
+    window.open(`https://wa.me/?text=${mensagemFormatada}`, "_blank");
   } catch (e) {
     console.error(e);
+    mostrarToast("Erro ao processar checkout.", "erro");
   }
 }
 
 // =========================================================================
-// 10. CENTRAL DE CLIQUES GLOBAL
+// 9. CENTRAL DE CLIQUES GLOBAL (ESCUTADOR DE BOTÕES)
 // =========================================================================
 document.addEventListener("click", (e) => {
-  if (e.target && e.target.id === "cartToggleBtn") {
-    if (cartDrawer) cartDrawer.classList.add("open");
-    return;
-  }
-  if (e.target && e.target.id === "closeCartBtn") {
-    if (cartDrawer) cartDrawer.classList.remove("open");
-    return;
-  }
   if (e.target && e.target.classList.contains("btn-buy")) {
-    addToCart(
-      e.target.getAttribute("data-name"),
-      parseFloat(e.target.getAttribute("data-price")),
-    );
-    return;
-  }
-  if (e.target && e.target.classList.contains("qty-btn")) {
-    changeQty(
-      e.target.getAttribute("data-name"),
-      parseInt(e.target.getAttribute("data-amount"), 10),
-    );
-    return;
-  }
-  if (e.target && e.target.closest("#checkoutBtn")) {
-    e.preventDefault();
-    finalizarPedidoCompleto();
+    const nome = e.target.getAttribute("data-name");
+    const preco = e.target.getAttribute("data-price");
+    finalizarPedidoCompleto(nome, preco);
     return;
   }
   if (e.target && e.target.classList.contains("nav-btn")) {
@@ -457,16 +303,29 @@ document.addEventListener("click", (e) => {
     if (loginBox) loginBox.style.display = "block";
     return;
   }
-  if (e.target && e.target.id === "openForgotModal") {
-    e.preventDefault();
-    if (forgotModal) forgotModal.style.display = "flex";
-    return;
-  }
-  if (e.target && e.target.id === "closeForgotModal") {
-    if (forgotModal) forgotModal.style.display = "none";
+  if (e.target && e.target.id === "logoutBtn") {
+    if (welcomeBox) welcomeBox.style.display = "none";
+    if (loginBox) loginBox.style.display = "block";
     return;
   }
 });
+// =========================================================================
+// 10. ROTINAS AUXILIARES (TOASTS, OLHINHO E SESSÃO)
+// =========================================================================
+function mostrarToast(mensagem, tipo = "sucesso") {
+  const antigo = document.getElementById("toast-sistema");
+  if (antigo) antigo.remove();
+  const toast = document.createElement("div");
+  toast.id = "toast-sistema";
+  toast.textContent = mensagem;
+  toast.style =
+    "position:fixed; bottom:20px; right:20px; padding:12px 20px; border-radius:8px; color:#fff; font-weight:bold; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.25);";
+  toast.style.backgroundColor = tipo === "sucesso" ? "#22c55e" : "#ef4444";
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.remove();
+  }, 3000);
+}
 function carregarDadosLembrados() {
   const usuarioSalvo = localStorage.getItem("remembered_user");
   const senhaSalva = localStorage.getItem("remembered_pass");
@@ -478,20 +337,12 @@ function carregarDadosLembrados() {
   if (usuarioSalvo && senhaSalva && rememberMeCheckbox)
     rememberMeCheckbox.checked = true;
 }
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    if (welcomeBox) welcomeBox.style.display = "none";
-    if (loginBox) loginBox.style.display = "block";
-  });
-}
-if (forgotForm) {
-  forgotForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const msg = document.getElementById("recoveryMessage");
-    if (msg) {
-      msg.textContent =
-        "Recuperação desativada localmente. Use uma conta de teste!";
-      msg.style.color = "#ef4444";
-    }
-  });
+function configurarOlhinhoSenha() {
+  const toggleLoginPassword = document.getElementById("toggleLoginPassword");
+  if (toggleLoginPassword && passwordInput) {
+    toggleLoginPassword.onclick = () => {
+      passwordInput.type =
+        passwordInput.type === "password" ? "text" : "password";
+    };
+  }
 }
