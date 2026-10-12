@@ -51,74 +51,6 @@ const forgotForm = document.getElementById("forgotForm");
 const logoutBtn = document.getElementById("logoutBtn");
 
 // =========================================================================
-// 4. GERADOR DE VITRINE DINÂMICO
-// =========================================================================
-function generateCakeCatalog(cakeFlavors) {
-  if (!cakeContainer) return;
-  cakeContainer.innerHTML = "";
-
-  if (!cakeFlavors || cakeFlavors.length === 0) {
-    cakeContainer.innerHTML =
-      '<p class="empty-cart-text" style="color: #94a3b8; text-align: center; width: 100%;">Nenhum bolo disponível no banco de dados.</p>';
-    return;
-  }
-
-  cakeFlavors.forEach((bolo, index) => {
-    const itemNumber = index + 1;
-
-    const tituloBolo =
-      bolo.nome || bolo.name || bolo.title || `Bolo Tradicional #${itemNumber}`;
-    const valorBolo = bolo.preco || bolo.price || bolo.value || 0;
-    const detalheBolo =
-      bolo.descricao ||
-      bolo.description ||
-      bolo.desc ||
-      "Delicioso bolo artesanal feito com receitas exclusivas.";
-
-    const price = parseFloat(valorBolo).toFixed(2);
-    const fullName = tituloBolo + " (#" + itemNumber + ")";
-
-    const imagemHTML = `<div class="cake-icon" style="font-size: 3.5rem; text-align: center; padding: 25px 0; background: #1e293b; border-radius: 8px; user-select: none;">🎂</div>`;
-
-    const card = document.createElement("div");
-    card.className = "cake-card";
-    card.style =
-      "background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 12px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; position: relative; margin-bottom: 15px; color: white;";
-
-    let htmlInterno = "";
-    htmlInterno += "<div style='position: relative;'>";
-    htmlInterno +=
-      "  <span style='position: absolute; top: 10px; left: 10px; background: #e11d48; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2;'>Premium</span>";
-    htmlInterno += "  " + imagemHTML;
-    htmlInterno +=
-      "  <div class='cake-title' style='margin-top: 15px; font-weight: bold; color: #f8fafc; font-size: 1.2rem;'>" +
-      fullName +
-      "</div>";
-    htmlInterno +=
-      "  <div class='cake-desc' style='font-size: 13px; color: #94a3b8; margin: 8px 0; line-height: 1.4;'>" +
-      detalheBolo +
-      "</div>";
-    htmlInterno += "</div>";
-    htmlInterno +=
-      "<div class='cake-footer' style='display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;'>";
-    htmlInterno +=
-      "  <span class='cake-price' style='font-weight: bold; color: #f43f5e; font-size: 1.3rem;'>R$ " +
-      price +
-      "</span>";
-    htmlInterno +=
-      "  <button class='btn-buy' data-name='" +
-      fullName +
-      "' data-price='" +
-      price +
-      "' style='background: #e11d48; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;'>Adicionar</button>";
-    htmlInterno += "</div>";
-
-    card.innerHTML = htmlInterno;
-    cakeContainer.appendChild(card);
-  });
-}
-
-// =========================================================================
 // 5. SISTEMA E REGRAS DO CARRINHO DE COMPRAS
 // =========================================================================
 function addToCart(name, price) {
@@ -452,90 +384,142 @@ function alterarQuantidadeItem(nomeProduto, acao) {
 }
 
 // =========================================================================
-// CENTRAL DE CLIQUES GLOBAL CORRIGIDA E ROBUSTA
+// 4. GERADOR DE VITRINE DINÂMICO (Sem eventos duplicados)
+// =========================================================================
+function generateCakeCatalog(cakeFlavors) {
+  if (!cakeContainer) return;
+  cakeContainer.innerHTML = "";
+
+  if (!cakeFlavors || cakeFlavors.length === 0) {
+    cakeContainer.innerHTML =
+      '<p class="empty-cart-text" style="color: #94a3b8; text-align: center; width: 100%;">Nenhum bolo disponível no banco de dados.</p>';
+    return;
+  }
+
+  cakeFlavors.forEach((bolo, index) => {
+    const itemNumber = index + 1;
+
+    const tituloBolo =
+      bolo.nome || bolo.name || bolo.title || `Bolo Tradicional #${itemNumber}`;
+    const valorBolo = bolo.preco || bolo.price || bolo.value || 0;
+    const detalheBolo =
+      bolo.descricao ||
+      bolo.description ||
+      bolo.desc ||
+      "Delicioso bolo artesanal feito com receitas exclusivas.";
+
+    const price = parseFloat(valorBolo).toFixed(2);
+    const fullName = tituloBolo + " (#" + itemNumber + ")";
+
+    const imagemHTML = `<div class="cake-icon" style="font-size: 3.5rem; text-align: center; padding: 25px 0; background: #1e293b; border-radius: 8px; user-select: none;">🎂</div>`;
+
+    const card = document.createElement("div");
+    card.className = "cake-card";
+    card.style =
+      "background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 12px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; position: relative; margin-bottom: 15px; color: white;";
+
+    let htmlInterno = "";
+    htmlInterno += "<div style='position: relative;'>";
+    htmlInterno +=
+      "  <span style='position: absolute; top: 10px; left: 10px; background: #e11d48; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2;'>Premium</span>";
+    htmlInterno += "  " + imagemHTML;
+    htmlInterno +=
+      "  <div class='cake-title' style='margin-top: 15px; font-weight: bold; color: #f8fafc; font-size: 1.2rem;'>" +
+      fullName +
+      "</div>";
+    htmlInterno +=
+      "  <div class='cake-desc' style='font-size: 13px; color: #94a3b8; margin: 8px 0; line-height: 1.4;'>" +
+      detalheBolo +
+      "</div>";
+    htmlInterno += "</div>";
+    htmlInterno +=
+      "<div class='cake-footer' style='display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;'>";
+    htmlInterno +=
+      "  <span class='cake-price' style='font-weight: bold; color: #f43f5e; font-size: 1.3rem;'>R$ " +
+      price +
+      "</span>";
+    // Nota: Removido addEventListener direto para evitar duplicações; a Central de Cliques trata tudo.
+    htmlInterno +=
+      "  <button class='btn-buy' data-name='" +
+      fullName +
+      "' data-price='" +
+      price +
+      "' style='background: #e11d48; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;'>Adicionar</button>";
+    htmlInterno += "</div>";
+
+    card.innerHTML = htmlInterno;
+    cakeContainer.appendChild(card);
+  });
+}
+
+// =========================================================================
+// 9. CENTRAL DE CLIQUES GLOBAL COM .closest() (Robusta e sem falhas)
 // =========================================================================
 document.addEventListener("click", (e) => {
-  const target = e.target;
-  if (!target) return;
-
-  // 1. Botão Mais (+)
-  if (
-    target.classList.contains("btn-cart-plus") ||
-    target.matches(".cart-item-card button:nth-child(3)")
-  ) {
-    const nome = target.getAttribute("data-name");
+  // 1. Botão Mais (+) do Carrinho
+  const btnPlus = e.target.closest(".btn-cart-plus");
+  if (btnPlus) {
+    const nome = btnPlus.getAttribute("data-name");
     if (nome) alterarQuantidadeItem(nome, "aumentar");
     return;
   }
 
-  // 2. Botão Menos (-)
-  if (
-    target.classList.contains("btn-cart-minus") ||
-    target.matches(".cart-item-card button:nth-child(1)")
-  ) {
-    const nome = target.getAttribute("data-name");
+  // 2. Botão Menos (-) do Carrinho
+  const btnMinus = e.target.closest(".btn-cart-minus");
+  if (btnMinus) {
+    const nome = btnMinus.getAttribute("data-name");
     if (nome) alterarQuantidadeItem(nome, "diminuir");
     return;
   }
 
-  // 3. Botão Lixeira / Remover
-  if (
-    target.classList.contains("btn-cart-remove") ||
-    target.textContent.includes("🗑️")
-  ) {
-    const nome = target.getAttribute("data-name");
+  // 3. Botão Remover / Lixeira do Carrinho
+  const btnRemove = e.target.closest(".btn-cart-remove");
+  if (btnRemove) {
+    const nome = btnRemove.getAttribute("data-name");
     if (nome) alterarQuantidadeItem(nome, "remover");
     return;
   }
 
-  // 4. Botão de Finalizar no WhatsApp (Aceita qualquer ID ou texto parecido)
-  if (
-    target.id === "checkoutWhatsAppBtn" ||
-    (target.id === "cartToggleBtn" && target.closest(".cart-drawer-footer")) ||
-    target.textContent.includes("WhatsApp")
-  ) {
-    // Se o clique foi no botão de abrir o carrinho, não finaliza direto
-    if (target.id === "cartToggleBtn" && !target.closest(".cart-drawer")) {
-      const drawer = document.getElementById("cartDrawer");
-      if (drawer) drawer.classList.add("open");
-      renderizarCarrinhoVisual();
-      return;
-    }
+  // 4. Botão Adicionar da Vitrine (Adiciona apenas 1 por clique)
+  const btnBuy = e.target.closest(".btn-buy");
+  if (btnBuy) {
+    const nome = btnBuy.getAttribute("data-name");
+    const preco = btnBuy.getAttribute("data-price");
+    if (nome && preco) addToCart(nome, preco);
+    return;
+  }
 
-    // Se for o botão de checkout
+  // 5. Botão de Finalizar no WhatsApp
+  const btnWhatsapp =
+    e.target.closest("#checkoutWhatsAppBtn") ||
+    (e.target.textContent && e.target.textContent.includes("WhatsApp"));
+  if (btnWhatsapp) {
     finalizarPedidoCompleto();
     return;
   }
 
-  // 5. Adicionar produto à vitrine
-  if (target.classList.contains("btn-buy")) {
-    const nome = target.getAttribute("data-name");
-    const preco = target.getAttribute("data-price");
-    addToCart(nome, preco);
-    return;
-  }
-
-  // 6. Abrir gaveta do carrinho pelo ícone superior
-  if (target.id === "cartToggleBtn") {
+  // 6. Abrir gaveta do carrinho
+  const toggleBtn = e.target.closest("#cartToggleBtn");
+  if (toggleBtn) {
     const drawer = document.getElementById("cartDrawer");
     if (drawer) drawer.classList.add("open");
     renderizarCarrinhoVisual();
     return;
   }
 
-  // 7. Fechar gaveta no 'X'
-  if (
-    target.id === "closeCartBtn" ||
-    target.classList.contains("close-cart-btn")
-  ) {
+  // 7. Fechar gaveta do carrinho
+  const closeBtn =
+    e.target.closest("#closeCartBtn") || e.target.closest(".close-cart-btn");
+  if (closeBtn) {
     const drawer = document.getElementById("cartDrawer");
     if (drawer) drawer.classList.remove("open");
     return;
   }
 
-  // 8. Navegação do Dashboard
-  if (target.classList.contains("nav-btn")) {
-    const targetPanelId = target.getAttribute("data-target");
+  // 8. Navegação do Painel (Abas)
+  const navBtn = e.target.closest(".nav-btn");
+  if (navBtn) {
+    const targetPanelId = navBtn.getAttribute("data-target");
     if (!targetPanelId) return;
     document
       .querySelectorAll(".nav-btn")
@@ -543,27 +527,28 @@ document.addEventListener("click", (e) => {
     document
       .querySelectorAll(".dashboard-panel")
       .forEach((p) => p.classList.remove("active"));
-    target.classList.add("active");
+    navBtn.classList.add("active");
     const targetPanel = document.getElementById(targetPanelId);
     if (targetPanel) targetPanel.classList.add("active");
     return;
   }
 
-  if (target.id === "openRegister") {
+  // 9. Alternar telas de Registo / Login / Logout
+  if (e.target && e.target.id === "openRegister") {
     e.preventDefault();
     if (loginBox) loginBox.style.display = "none";
     if (registerBox) registerBox.style.display = "block";
     return;
   }
 
-  if (target.id === "openLogin") {
+  if (e.target && e.target.id === "openLogin") {
     e.preventDefault();
     if (registerBox) registerBox.style.display = "none";
     if (loginBox) loginBox.style.display = "block";
     return;
   }
 
-  if (target.id === "logoutBtn") {
+  if (e.target && e.target.id === "logoutBtn") {
     if (welcomeBox) welcomeBox.style.display = "none";
     if (loginBox) loginBox.style.display = "block";
     return;
