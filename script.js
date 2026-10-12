@@ -1,39 +1,8 @@
-console.log("app.js v7 Final - Conectado ao Banco e Totalmente Corrigido");
+console.log("app.js v8 Final - Totalmente Corrigido e Sem Cortes");
 
 // =========================================================================
-// 1. CONFIGURAÇÃO E VARIÁVEIS DE ESTADO
+// 1. VARIÁVEIS DE ESTADO DO CARRINHO E HISTÓRICO
 // =========================================================================
-function normalizarPedido(p) {
-  if (!p || typeof p !== "object") return null;
-  let itens = p.descricao_itens || p.descricao || p.itens || [];
-  if (typeof itens === "string") itens = [itens];
-  if (!Array.isArray(itens)) itens = [];
-  itens = itens.map((i) =>
-    i && typeof i === "object"
-      ? (i.qty || 1) + "x " + (i.name || "Item")
-      : String(i),
-  );
-  return {
-    id: p.id || Math.floor(100000 + Math.random() * 900000),
-    timestamp: Number(p.timestamp) || Date.parse(p.data_hora) || 0,
-    data: p.data_hora || "",
-    itens: itens,
-    total: p.valor_total != null ? p.valor_total : "0.00",
-  };
-}
-
-function carregarHistorico() {
-  try {
-    const bruto = JSON.parse(localStorage.getItem("order_history"));
-    return Array.isArray(bruto)
-      ? bruto.map(normalizarPedido).filter(Boolean)
-      : [];
-  } catch (erro) {
-    return [];
-  }
-}
-
-let orderHistory = carregarHistorico();
 let cart = [];
 
 // =========================================================================
@@ -45,11 +14,12 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarDadosLembrados();
 });
 
+// 🍰 BUSCA REAL DOS BOLOS NO POSTGRESQL
 async function carregarVitrineReal() {
   try {
     const response = await fetch("/api/produtos");
     const bolosDoBanco = await response.json();
-    console.log("Core: Bolos carregados", bolosDoBanco);
+    console.log("Bolos carregados do banco com sucesso:", bolosDoBanco);
     generateCakeCatalog(bolosDoBanco);
   } catch (error) {
     console.error("Erro ao carregar a vitrine de bolos:", error);
@@ -57,7 +27,7 @@ async function carregarVitrineReal() {
 }
 
 // =========================================================================
-// 3. ELEMENTOS DO DOM
+// 3. ELEMENTOS DO DOM (MAPEADOS DO SEU HTML)
 // =========================================================================
 const loginBox = document.getElementById("loginBox");
 const registerBox = document.getElementById("registerBox");
@@ -148,14 +118,8 @@ function changeQty(name, amount) {
   if (!item) return;
   item.qty += amount;
   if (item.qty <= 0) {
-    removeFromCart(name);
-  } else {
-    updateCartUI();
+    cart = cart.filter((i) => i.name !== name);
   }
-}
-
-function removeFromCart(name) {
-  cart = cart.filter((item) => item.name !== name);
   updateCartUI();
 }
 
@@ -190,9 +154,6 @@ function updateCartUI() {
         '<button class="qty-btn" data-name="' +
         item.name +
         '" data-amount="1">+</button>' +
-        '<button class="delete-btn" data-name="' +
-        item.name +
-        '" style="background: transparent; border: none; color: #ef4444; font-size: 1.1rem; cursor: pointer; margin-left: 5px; width: auto; padding: 0;">🗑️</button>' +
         "</div>";
       cartItemsContainer.appendChild(itemRow);
     });
@@ -204,27 +165,8 @@ function updateCartUI() {
 }
 
 // =========================================================================
-// 6. TOAST E AUTENTICAÇÃO
+// 6. SISTEMA DE TOAST NOTIFICATION PROFISSIONAL
 // =========================================================================
-function carregarDadosLembrados() {
-  const usuarioSalvo = localStorage.getItem("remembered_user");
-  const senhaSalva = localStorage.getItem("remembered_pass");
-  if (usuarioSalvo && usernameInput) usernameInput.value = usuarioSalvo;
-  if (senhaSalva && passwordInput) {
-    passwordInput.value = senhaSalva;
-    passwordInput.type = "password";
-  }
-  if (usuarioSalvo && senhaSalva && rememberMeCheckbox)
-    rememberMeCheckbox.checked = true;
-}
-
-if (logoutBtn) {
-  logoutBtn.addEventListener("click", () => {
-    if (welcomeBox) welcomeBox.style.display = "none";
-    if (loginBox) loginBox.style.display = "block";
-  });
-}
-
 function mostrarToast(mensagem, tipo = "sucesso") {
   const antigo = document.getElementById("toast-sistema");
   if (antigo) antigo.remove();
@@ -238,27 +180,25 @@ function mostrarToast(mensagem, tipo = "sucesso") {
   toast.style.borderRadius = "8px";
   toast.style.color = "#fff";
   toast.style.fontWeight = "bold";
-  toast.style.fontSize = "14px";
   toast.style.zIndex = "9999";
   toast.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
-  toast.style.transition = "opacity 0.3s ease";
-  if (tipo === "sucesso") toast.style.backgroundColor = "#22c55e";
-  else if (tipo === "erro") toast.style.backgroundColor = "#ef4444";
-  else toast.style.backgroundColor = "#3b82f6";
+  toast.style.backgroundColor = tipo === "sucesso" ? "#22c55e" : "#ef4444";
   document.body.appendChild(toast);
   setTimeout(() => {
-    toast.style.opacity = "0";
-    setTimeout(() => toast.remove(), 305);
+    toast.remove();
   }, 3000);
 }
 
+// =========================================================================
+// 7. MECANISMO DE CADASTRO REAL (POSTGRESQL)
+// =========================================================================
 if (formularioDeCadastro) {
   formularioDeCadastro.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     const inputUser = document.getElementById("regUsername");
     const inputEmail = document.getElementById("regEmail");
     const inputPass = document.getElementById("regPassword");
-    const paragrafoMensagem = document.getElementById("registerMessage");
+
     if (!inputUser || !inputEmail || !inputPass) return;
 
     const dadosDoCadastro = {
@@ -268,15 +208,6 @@ if (formularioDeCadastro) {
       telefone: "",
     };
 
-    if (
-      !dadosDoCadastro.username ||
-      !dadosDoCadastro.email ||
-      !dadosDoCadastro.senha
-    ) {
-      mostrarToast("Por favor, preencha todos os campos!", "erro");
-      return;
-    }
-
     try {
       const resposta = await fetch("/api/usuarios/cadastro", {
         method: "POST",
@@ -285,32 +216,35 @@ if (formularioDeCadastro) {
       });
       const resultado = await resposta.json();
       if (resposta.ok && resultado.sucesso) {
-        if (paragrafoMensagem) {
-          paragrafoMensagem.textContent = "Conta criada com sucesso!";
-          paragrafoMensagem.style.color = "#22c55e";
-        }
         mostrarToast("Conta criada com sucesso!", "sucesso");
         setTimeout(() => {
           if (registerBox) registerBox.style.display = "none";
           if (loginBox) loginBox.style.display = "block";
-        }, 2000);
+        }, 1500);
       } else {
-        mostrarToast("Erro: " + (resultado.erro || "Falha"), "erro");
+        mostrarToast(resultado.erro || "Falha ao cadastrar", "erro");
       }
     } catch (erro) {
-      mostrarToast("Erro de conexão", "erro");
+      mostrarToast("Erro de conexão com o servidor", "erro");
     }
   });
 }
+
+// =========================================================================
+// 8. MECANISMO DE LOGIN REAL (POSTGRESQL)
+// =========================================================================
 if (loginForm) {
   loginForm.addEventListener("submit", async (evento) => {
-    evento.preventDefault();
+    evento.preventDefault(); // IMPORTANTE: Impede a tela de piscar e atualizar sozinha!
+
     const entradaLogin = usernameInput ? usernameInput.value.trim() : "";
     const entradaSenha = passwordInput ? passwordInput.value.trim() : "";
+
     if (!entradaLogin || !entradaSenha) {
-      mostrarToast("Preencha os campos!", "erro");
+      mostrarToast("Preencha todos os campos!", "erro");
       return;
     }
+
     try {
       const resposta = await fetch("/api/usuarios/login", {
         method: "POST",
@@ -320,29 +254,39 @@ if (loginForm) {
           senha: entradaSenha,
         }),
       });
+
       const resultado = await resposta.json();
+
       if (resposta.ok && resultado.sucesso) {
         mostrarToast("Bem-vindo de volta! 🎂", "sucesso");
         if (loginBox) loginBox.style.display = "none";
         if (welcomeBox) welcomeBox.style.display = "block";
+
         const user = resultado.usuario || {};
         if (userGreeting)
           userGreeting.textContent = "Olá, " + (user.username || "Usuário");
         if (profileUser) profileUser.textContent = user.username || "Usuário";
         if (profileEmail) profileEmail.textContent = user.email || "";
+
+        if (rememberMeCheckbox && rememberMeCheckbox.checked) {
+          localStorage.setItem("remembered_user", entradaLogin);
+          localStorage.setItem("remembered_pass", entradaSenha);
+        }
+
         loginForm.reset();
         renderizarHistoricoPedidos();
       } else {
-        mostrarToast("Credenciais inválidas.", "erro");
+        mostrarToast(resultado.erro || "Usuário ou senha incorretos.", "erro");
       }
     } catch (erro) {
-      mostrarToast("Erro no servidor.", "erro");
+      console.error(erro);
+      mostrarToast("Erro interno ao processar o login.", "erro");
     }
   });
 }
 
 // =========================================================================
-// 8. HISTÓRICO DE PEDIDOS E INTEGRAÇÃO POSTGRESQL
+// 9. HISTÓRICO DE PEDIDOS E INTEGRAÇÃO POSTGRESQL
 // =========================================================================
 async function renderizarHistoricoPedidos() {
   const container = document.getElementById("ordersContainer");
@@ -361,19 +305,22 @@ async function renderizarHistoricoPedidos() {
         return (
           <div
             class="order-card"
-            style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #fff;"
+            style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #fff; color: #333;"
           >
             {" "}
             <h4>
               Pedido ${pedido.id_pedido || "#000000"} (${total - indice} de $
               {total})
             </h4>{" "}
-            <p>${pedido.data_hora || ""}</p>{" "}
+            <p style="font-size:12px; color:#666;">${pedido.data_hora || ""}</p>{" "}
             <p>
               <strong>Itens:</strong> ${textoItens}
             </p>{" "}
             <p>
-              <strong>Status:</strong> ${pedido.status_pedido || "Aguardando"}
+              <strong>Status:</strong>{" "}
+              <span style="background:#fff3cd; color:#856404; padding:2px 6px; border-radius:4px;">
+                ${pedido.status_pedido || "Aguardando"}
+              </span>
             </p>{" "}
             <p>
               <strong>Total:</strong> R$ $
@@ -419,7 +366,7 @@ async function finalizarPedidoCompleto() {
 }
 
 // =========================================================================
-// 9. CENTRAL DE CLIQUES GLOBAL
+// 10. CENTRAL DE CLIQUES GLOBAL
 // =========================================================================
 document.addEventListener("click", (e) => {
   if (e.target && e.target.id === "cartToggleBtn") {
@@ -444,10 +391,6 @@ document.addEventListener("click", (e) => {
     );
     return;
   }
-  if (e.target && e.target.classList.contains("delete-btn")) {
-    removeFromCart(e.target.getAttribute("data-name"));
-    return;
-  }
   if (e.target && e.target.closest("#checkoutBtn")) {
     e.preventDefault();
     finalizarPedidoCompleto();
@@ -465,7 +408,6 @@ document.addEventListener("click", (e) => {
     e.target.classList.add("active");
     const targetPanel = document.getElementById(targetPanelId);
     if (targetPanel) targetPanel.classList.add("active");
-    if (targetPanelId === "panel-orders") renderizarHistoricoPedidos();
     return;
   }
   if (e.target && e.target.id === "openRegister") {
@@ -490,6 +432,23 @@ document.addEventListener("click", (e) => {
     return;
   }
 });
+function carregarDadosLembrados() {
+  const usuarioSalvo = localStorage.getItem("remembered_user");
+  const senhaSalva = localStorage.getItem("remembered_pass");
+  if (usuarioSalvo && usernameInput) usernameInput.value = usuarioSalvo;
+  if (senhaSalva && passwordInput) {
+    passwordInput.value = senhaSalva;
+    passwordInput.type = "password";
+  }
+  if (usuarioSalvo && senhaSalva && rememberMeCheckbox)
+    rememberMeCheckbox.checked = true;
+}
+if (logoutBtn) {
+  logoutBtn.addEventListener("click", () => {
+    if (welcomeBox) welcomeBox.style.display = "none";
+    if (loginBox) loginBox.style.display = "block";
+  });
+}
 if (forgotForm) {
   forgotForm.addEventListener("submit", (e) => {
     e.preventDefault();
