@@ -407,16 +407,17 @@ function renderizarCarrinhoVisual() {
 
     htmlCarrinho += `
       <div class="cart-item-card" style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 8px; margin-bottom: 10px; color: #f8fafc;">
-        <div style="flex: 1;">
-          <div style="font-weight: bold; font-size: 14px;">${item.name}</div>
-          <div style="font-size: 12px; color: #94a3b8;">R$ ${item.price.toFixed(2)} un</div>
+        <div style="flex: 1; min-width: 0; padding-right: 5px;">
+          <div style="font-weight: bold; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.name}">${item.name}</div>
+          <div style="font-size: 11px; color: #94a3b8;">R$ ${item.price.toFixed(2)} un</div>
         </div>
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <button onclick="alterarQuantidadeItem('${item.name}', 'diminuir')" style="background: #334155; color: white; border: none; width: 25px; height: 25px; border-radius: 4px; cursor: pointer; font-weight: bold;">-</button>
-          <span style="font-weight: bold; font-size: 14px; min-width: 20px; text-align: center;">${item.qty}</span>
-          <button onclick="alterarQuantidadeItem('${item.name}', 'aumentar')" style="background: #334155; color: white; border: none; width: 25px; height: 25px; border-radius: 4px; cursor: pointer; font-weight: bold;">+</button>
+        <div style="display: flex; align-items: center; gap: 5px;">
+          <button class="btn-cart-minus" data-name="${item.name}" style="background: #334155; color: white; border: none; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">-</button>
+          <span style="font-weight: bold; font-size: 13px; min-width: 15px; text-align: center;">${item.qty}</span>
+          <button class="btn-cart-plus" data-name="${item.name}" style="background: #334155; color: white; border: none; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">+</button>
+          <button class="btn-cart-remove" data-name="${item.name}" style="background: #ef4444; color: white; border: none; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;" title="Remover item">🗑️</button>
         </div>
-        <div style="font-weight: bold; color: #22c55e; font-size: 14px; margin-left: 10px;">
+        <div style="font-weight: bold; color: #22c55e; font-size: 12px; margin-left: 8px; white-space: nowrap;">
           R$ ${subtotal.toFixed(2)}
         </div>
       </div>
@@ -468,6 +469,90 @@ document.addEventListener("click", (e) => {
     return;
   }
 
+  document.addEventListener("click", (e) => {
+    // Aumentar quantidade
+    if (e.target && e.target.classList.contains("btn-cart-plus")) {
+      const nome = e.target.getAttribute("data-name");
+      alterarQuantidadeItem(nome, "aumentar");
+      return;
+    }
+
+    // Diminuir quantidade
+    if (e.target && e.target.classList.contains("btn-cart-minus")) {
+      const nome = e.target.getAttribute("data-name");
+      alterarQuantidadeItem(nome, "diminuir");
+      return;
+    }
+
+    // Remover item com a lixeira
+    if (e.target && e.target.classList.contains("btn-cart-remove")) {
+      const nome = e.target.getAttribute("data-name");
+      alterarQuantidadeItem(nome, "remover");
+      return;
+    }
+
+    // Finalizar Compra via WhatsApp
+    if (e.target && e.target.id === "checkoutWhatsAppBtn") {
+      finalizarPedidoCompleto();
+      return;
+    }
+
+    if (e.target && e.target.classList.contains("btn-buy")) {
+      const nome = e.target.getAttribute("data-name");
+      const preco = e.target.getAttribute("data-price");
+      addToCart(nome, preco);
+      return;
+    }
+
+    if (e.target && e.target.id === "cartToggleBtn") {
+      const drawer = document.getElementById("cartDrawer");
+      if (drawer) drawer.classList.add("open");
+      renderizarCarrinhoVisual();
+      return;
+    }
+
+    if (e.target && e.target.id === "closeCartBtn") {
+      const drawer = document.getElementById("cartDrawer");
+      if (drawer) drawer.classList.remove("open");
+      return;
+    }
+
+    if (e.target && e.target.classList.contains("nav-btn")) {
+      const targetPanelId = e.target.getAttribute("data-target");
+      if (!targetPanelId) return;
+      document
+        .querySelectorAll(".nav-btn")
+        .forEach((b) => b.classList.remove("active"));
+      document
+        .querySelectorAll(".dashboard-panel")
+        .forEach((p) => p.classList.remove("active"));
+      e.target.classList.add("active");
+      const targetPanel = document.getElementById(targetPanelId);
+      if (targetPanel) targetPanel.classList.add("active");
+      return;
+    }
+
+    if (e.target && e.target.id === "openRegister") {
+      e.preventDefault();
+      if (loginBox) loginBox.style.display = "none";
+      if (registerBox) registerBox.style.display = "block";
+      return;
+    }
+
+    if (e.target && e.target.id === "openLogin") {
+      e.preventDefault();
+      if (registerBox) registerBox.style.display = "none";
+      if (loginBox) loginBox.style.display = "block";
+      return;
+    }
+
+    if (e.target && e.target.id === "logoutBtn") {
+      if (welcomeBox) welcomeBox.style.display = "none";
+      if (loginBox) loginBox.style.display = "block";
+      return;
+    }
+  });
+
   // 🛒 Abrir gavetão do carrinho
   if (e.target && e.target.id === "cartToggleBtn") {
     const drawer = document.getElementById("cartDrawer");
@@ -481,6 +566,24 @@ document.addEventListener("click", (e) => {
     const drawer = document.getElementById("cartDrawer");
     if (drawer) drawer.classList.remove("open");
     return;
+  }
+
+  function alterarQuantidadeItem(nomeProduto, acao) {
+    const item = cart.find((i) => i.name === nomeProduto);
+    if (!item) return;
+
+    if (acao === "aumentar") {
+      item.qty++;
+    } else if (acao === "diminuir") {
+      item.qty--;
+      if (item.qty <= 0) {
+        cart = cart.filter((i) => i.name !== nomeProduto);
+      }
+    } else if (acao === "remover") {
+      cart = cart.filter((i) => i.name !== nomeProduto);
+    }
+
+    updateCartUI();
   }
 
   // 🚀 Finalizar pedido via WhatsApp (dentro da gaveta)
