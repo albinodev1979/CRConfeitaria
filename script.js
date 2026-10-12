@@ -1,4 +1,4 @@
-console.log("app.js v15.3 - Versão Final Consolidada e Otimizada");
+console.log("app.js v15.4 - Versão Definitiva Consolidada");
 
 // =========================================================================
 // 1. VARIÁVEIS DE ESTADO GLOBAL
@@ -9,18 +9,53 @@ let cart = []; // Array que armazena os bolos adicionados pelo cliente
 // 2. DISPAROS AO CARREGAR A PÁGINA
 // =========================================================================
 document.addEventListener("DOMContentLoaded", () => {
+  // Carregar tema preferido guardado no localStorage
+  const temaSalvo = localStorage.getItem("cr_theme");
+  if (temaSalvo === "light") {
+    document.body.classList.add("light-theme");
+  }
+
   renderizarHistoricoPedidos();
   carregarVitrineReal();
   carregarDadosLembrados();
   configurarOlhinhoSenha();
   updateCartUI();
-  // Carregar tema preferido ao iniciar
-  const temaSalvo = localStorage.getItem("cr_theme");
-  if (temaSalvo === "light") {
-    document.body.classList.add("light-theme");
-  }
 });
 
+// 🍰 BUSCA REAL DOS BOLOS NO POSTGRESQL (RENDER)
+async function carregarVitrineReal() {
+  try {
+    const response = await fetch("/api/produtos");
+    if (!response.ok) throw new Error("Erro na resposta da API");
+
+    const bolosDoBanco = await response.json();
+    console.log("🍰 BOLOS CARREGADOS DO BANCO COM SUCESSO:", bolosDoBanco);
+    generateCakeCatalog(bolosDoBanco);
+  } catch (error) {
+    console.error("❌ Erro ao carregar a vitrine de bolos:", error);
+  }
+}
+
+// =========================================================================
+// 3. MAPEAR ELEMENTOS DO DOM (HTML)
+// =========================================================================
+const loginBox = document.getElementById("loginBox");
+const registerBox = document.getElementById("registerBox");
+const welcomeBox = document.getElementById("welcomeBox");
+const userGreeting = document.getElementById("userGreeting");
+const cakeContainer = document.getElementById("cakeContainer");
+const profileUser = document.getElementById("profileUser");
+const profileEmail = document.getElementById("profileEmail");
+const loginForm = document.getElementById("loginForm");
+const usernameInput = document.getElementById("username");
+const passwordInput = document.getElementById("password");
+const rememberMeCheckbox = document.getElementById("rememberMe");
+const cartCount = document.getElementById("cartCount");
+const formularioDeCadastro = document.getElementById("registerForm");
+
+// =========================================================================
+// 4. GERADOR DE VITRINE DINÂMICO (COM AS 30 FOTOS REAIS DA PASTA ASSETS/IMG)
+// =========================================================================
 function generateCakeCatalog(cakeFlavors) {
   if (!cakeContainer) return;
   cakeContainer.innerHTML = "";
@@ -46,12 +81,12 @@ function generateCakeCatalog(cakeFlavors) {
     const price = parseFloat(valorBolo).toFixed(2);
     const fullName = tituloBolo + " (#" + itemNumber + ")";
 
-    // Caminho exato apontando para assets/img/fotoX.jpg (conforme a sua pasta)
-    const numeroFoto = (index % 30) + 1; // Garante que repita ou ajuste para as 30 fotos disponíveis
+    // Mapeia para as 30 fotos reais da pasta assets/img/ (ex: foto1.jpg até foto30.jpg)
+    const numeroFoto = (index % 30) + 1;
     const imagemSrc =
       bolo.imagem || bolo.img || `assets/img/foto${numeroFoto}.jpg`;
 
-    // HTML da Imagem Real com fallback de segurança caso alguma foto falhe
+    // HTML da Imagem Real com tratamento de erro caso o arquivo falhe
     const imagemHTML = `
       <div style="width: 100%; height: 180px; overflow: hidden; border-radius: 8px; background: #0f172a;">
         <img src="${imagemSrc}" alt="${fullName}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.onerror=null; this.src='assets/img/foto1.jpg';">
@@ -89,94 +124,6 @@ function generateCakeCatalog(cakeFlavors) {
       "' data-price='" +
       price +
       "' style='background: #e11d48; color: white; border-radius: 6px; padding: 8px 16px; border: none; cursor: pointer; font-weight: bold;'>Adicionar</button>";
-    htmlInterno += "</div>";
-
-    card.innerHTML = htmlInterno;
-    cakeContainer.appendChild(card);
-  });
-}
-
-// =========================================================================
-// 3. MAPEAR ELEMENTOS DO DOM (HTML)
-// =========================================================================
-const loginBox = document.getElementById("loginBox");
-const registerBox = document.getElementById("registerBox");
-const welcomeBox = document.getElementById("welcomeBox");
-const userGreeting = document.getElementById("userGreeting");
-const cakeContainer = document.getElementById("cakeContainer");
-const profileUser = document.getElementById("profileUser");
-const profileEmail = document.getElementById("profileEmail");
-const loginForm = document.getElementById("loginForm");
-const usernameInput = document.getElementById("username");
-const passwordInput = document.getElementById("password");
-const rememberMeCheckbox = document.getElementById("rememberMe");
-const cartCount = document.getElementById("cartCount");
-const formularioDeCadastro = document.getElementById("registerForm");
-const forgotModal = document.getElementById("forgotModal");
-const forgotForm = document.getElementById("forgotForm");
-const logoutBtn = document.getElementById("logoutBtn");
-
-// =========================================================================
-// 4. GERADOR DE VITRINE DINÂMICO
-// =========================================================================
-function generateCakeCatalog(cakeFlavors) {
-  if (!cakeContainer) return;
-  cakeContainer.innerHTML = "";
-
-  if (!cakeFlavors || cakeFlavors.length === 0) {
-    cakeContainer.innerHTML =
-      '<p class="empty-cart-text" style="color: #94a3b8; text-align: center; width: 100%;">Nenhum bolo disponível no banco de dados.</p>';
-    return;
-  }
-
-  cakeFlavors.forEach((bolo, index) => {
-    const itemNumber = index + 1;
-
-    const tituloBolo =
-      bolo.nome || bolo.name || bolo.title || `Bolo Tradicional #${itemNumber}`;
-    const valorBolo = bolo.preco || bolo.price || bolo.value || 0;
-    const detalheBolo =
-      bolo.descricao ||
-      bolo.description ||
-      bolo.desc ||
-      "Delicioso bolo artesanal feito com receitas exclusivas.";
-
-    const price = parseFloat(valorBolo).toFixed(2);
-    const fullName = tituloBolo + " (#" + itemNumber + ")";
-
-    const imagemHTML = `<div class="cake-icon" style="font-size: 3.5rem; text-align: center; padding: 25px 0; background: #1e293b; border-radius: 8px; user-select: none;">🎂</div>`;
-
-    const card = document.createElement("div");
-    card.className = "cake-card";
-    card.style =
-      "background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 12px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; position: relative; margin-bottom: 15px; color: white;";
-
-    let htmlInterno = "";
-    htmlInterno += "<div style='position: relative;'>";
-    htmlInterno +=
-      "  <span style='position: absolute; top: 10px; left: 10px; background: #e11d48; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2;'>Premium</span>";
-    htmlInterno += "  " + imagemHTML;
-    htmlInterno +=
-      "  <div class='cake-title' style='margin-top: 15px; font-weight: bold; color: #f8fafc; font-size: 1.2rem;'>" +
-      fullName +
-      "</div>";
-    htmlInterno +=
-      "  <div class='cake-desc' style='font-size: 13px; color: #94a3b8; margin: 8px 0; line-height: 1.4;'>" +
-      detalheBolo +
-      "</div>";
-    htmlInterno += "</div>";
-    htmlInterno +=
-      "<div class='cake-footer' style='display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;'>";
-    htmlInterno +=
-      "  <span class='cake-price' style='font-weight: bold; color: #f43f5e; font-size: 1.3rem;'>R$ " +
-      price +
-      "</span>";
-    htmlInterno +=
-      "  <button class='btn-buy' data-name='" +
-      fullName +
-      "' data-price='" +
-      price +
-      "' style='background: #e11d48; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;'>Adicionar</button>";
     htmlInterno += "</div>";
 
     card.innerHTML = htmlInterno;
@@ -301,8 +248,11 @@ async function finalizarPedidoCompleto() {
   message +=
     "Por favor, envie as instruções de pagamento e o prazo para retirada!";
 
+  // ID limpo sem o # para não quebrar rotas DELETE no servidor
+  const idNumericoLimpo = String(Math.floor(100000 + Math.random() * 900000));
+
   const dadosParaOBanco = {
-    id_pedido: "#" + Math.floor(100000 + Math.random() * 900000),
+    id_pedido: idNumericoLimpo,
     data_hora: new Date().toLocaleString("pt-BR"),
     descricao_itens: itensDoPedidoSimples.join(", "),
     status_pedido: "Aguardando Confirmação",
@@ -330,7 +280,6 @@ async function finalizarPedidoCompleto() {
     cart = [];
     updateCartUI();
 
-    // Fecha o gavetão após finalizar
     const drawer = document.getElementById("cartDrawer");
     if (drawer) drawer.classList.remove("open");
 
@@ -459,11 +408,11 @@ async function renderizarHistoricoPedidos() {
 
     pedidosDoBanco.forEach((pedido, indice) => {
       const textoItens = pedido.descricao_itens || "1x Bolo Selecionado";
-      const idPedidoAtual = pedido.id_pedido || "#000000";
+      const idPedidoAtual = pedido.id_pedido || "000000";
 
       htmlPedidos += `
         <div class="order-card" style="border: 1px solid #334155; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #1e293b; color: #f8fafc; text-align: left; position: relative;">
-          <h4 style="margin: 0 0 5px 0; color: #f8fafc;">Pedido ${idPedidoAtual} (${total - indice} de ${total})</h4>
+          <h4 style="margin: 0 0 5px 0; color: #f8fafc;">Pedido #${idPedidoAtual} (${total - indice} de ${total})</h4>
           <p style="font-size: 12px; color: #94a3b8; margin: 0 0 8px 0;">${pedido.data_hora || ""}</p>
           <p style="margin: 0 0 5px 0;"><strong>Itens:</strong> ${textoItens}</p>
           <p style="margin: 0 0 5px 0;"><strong>Status:</strong> <span style="background:#334155; color:#f43f5e; padding:2px 8px; border-radius:4px; font-size:12px;">${pedido.status_pedido || "Aguardando"}</span></p>
@@ -482,7 +431,7 @@ async function renderizarHistoricoPedidos() {
 }
 
 async function excluirPedido(idPedido) {
-  if (!confirm(`Deseja realmente excluir o pedido ${idPedido}?`)) return;
+  if (!confirm(`Deseja realmente excluir o pedido #${idPedido}?`)) return;
 
   try {
     const resposta = await fetch(`/api/pedidos/${idPedido}`, {
@@ -507,7 +456,7 @@ async function excluirPedido(idPedido) {
 }
 
 // =========================================================================
-// 9. CENTRAL DE CLIQUES GLOBAL (ESCUTADOR DE BOTÕES)
+// 9. CENTRAL DE CLIQUES GLOBAL ÚNICA
 // =========================================================================
 document.addEventListener("click", (e) => {
   // 1. Botão Mais (+) do Carrinho
@@ -515,21 +464,6 @@ document.addEventListener("click", (e) => {
   if (btnPlus) {
     const nome = btnPlus.getAttribute("data-name");
     if (nome) alterarQuantidadeItem(nome, "aumentar");
-    return;
-  }
-
-  // ☀️ Alternar Tema Claro / Escuro
-  const btnTema = e.target.closest("#themeToggleBtn");
-  if (btnTema) {
-    document.body.classList.toggle("light-theme");
-    const novoTema = document.body.classList.contains("light-theme")
-      ? "light"
-      : "dark";
-    localStorage.setItem("cr_theme", novoTema);
-    mostrarToast(
-      `Tema alterado para ${novoTema === "light" ? "Claro" : "Escuro"}!`,
-      "sucesso",
-    );
     return;
   }
 
@@ -602,7 +536,22 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // 9. Alternar telas de Registo / Login / Logout
+  // 9. Alternar Tema Claro / Escuro
+  const btnTema = e.target.closest("#themeToggleBtn");
+  if (btnTema) {
+    document.body.classList.toggle("light-theme");
+    const novoTema = document.body.classList.contains("light-theme")
+      ? "light"
+      : "dark";
+    localStorage.setItem("cr_theme", novoTema);
+    mostrarToast(
+      `Tema alterado para ${novoTema === "light" ? "Claro" : "Escuro"}!`,
+      "sucesso",
+    );
+    return;
+  }
+
+  // 10. Alternar telas de Registo / Login / Logout
   if (e.target && e.target.id === "openRegister") {
     e.preventDefault();
     if (loginBox) loginBox.style.display = "none";
