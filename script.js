@@ -1,4 +1,4 @@
-console.log("app.js v15.1 - Versao Segura, Unificada e Sem Erros");
+console.log("app.js v15.2 - Versao Final com Link do WhatsApp Corrigido");
 
 // =========================================================================
 // 1. VARIÁVEIS DE ESTADO GLOBAL
@@ -191,10 +191,11 @@ async function finalizarPedidoCompleto() {
 
     renderizarHistoricoPedidos();
 
+    // 🏆 CORREÇÃO: URL montada perfeitamente com a barra '/' obrigatória após o wa.me
     const numeroLojaOficial = "5581992185775";
     const mensagemFormatada = encodeURIComponent(message);
     window.open(
-      `https://wa.me{numeroLojaOficial}?text=${mensagemFormatada}`,
+      "https://wa.me" + numeroLojaOficial + "?text=" + mensagemFormatada,
       "_blank",
     );
 
@@ -253,7 +254,6 @@ if (loginForm) {
           localStorage.removeItem("remembered_user");
           localStorage.removeItem("remembered_pass");
         }
-
         loginForm.reset();
         renderizarHistoricoPedidos();
         carregarVitrineReal();
@@ -318,21 +318,34 @@ async function renderizarHistoricoPedidos() {
     let htmlPedidos = "";
     pedidosDoBanco.forEach((pedido, indice) => {
       const textoItens = pedido.descricao_itens || "1x Bolo Selecionado";
-      htmlPedidos += "";
-      htmlPedidos +=
-        "  Pedido " +
-        (pedido.id_pedido || "#000000") +
-        " (" +
-        (total - indice) +
-        " de " +
-        total +
-        ")";
-      htmlPedidos += "  " + (pedido.data_hora || "") + "";
-      htmlPedidos += "  Itens: " + textoItens + "";
-      htmlPedidos += "  Status: " + (pedido.status_pedido || "Aguardando") + "";
-      htmlPedidos +=
-        "  Total: R$ " + parseFloat(pedido.valor_total || 0).toFixed(2) + "";
-      htmlPedidos += "";
+      // 🏆 RESTAURADO: Estrutura HTML limpa para desenhar os cartões de histórico no dashboard
+      htmlPedidos += (
+        <div
+          class="order-card"
+          style="border: 1px solid #334155; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #1e293b; color: #f8fafc; text-align: left;"
+        >
+          {" "}
+          <h4 style="margin: 0 0 5px 0; color: #f8fafc;">
+            Pedido ${pedido.id_pedido || "#000000"} (${total - indice} de $
+            {total})
+          </h4>{" "}
+          <p style="font-size: 12px; color: #94a3b8; margin: 0 0 8px 0;">
+            ${pedido.data_hora || ""}
+          </p>{" "}
+          <p style="margin: 0 0 5px 0;">
+            <strong>Itens:</strong> ${textoItens}
+          </p>{" "}
+          <p style="margin: 0 0 5px 0;">
+            <strong>Status:</strong>{" "}
+            <span style="background:#334155; color:#f43f5e; padding:2px 8px; border-radius:4px; font-size:12px;">
+              ${pedido.status_pedido || "Aguardando"}
+            </span>
+          </p>{" "}
+          <p style="margin: 5px 0 0 0; font-weight:bold; color:#22c55e;">
+            Total: R$ ${parseFloat(pedido.valor_total || 0).toFixed(2)}
+          </p>{" "}
+        </div>
+      );
     });
     container.innerHTML = htmlPedidos;
   } catch (erro) {
