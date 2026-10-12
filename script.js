@@ -1,9 +1,9 @@
-console.log("app.js v11 Final - Vitrine Polida e Sem Imagens Quebradas!");
+console.log("app.js v12 Final - Fluxo Completo do Carrinho Restaurado");
 
 // =========================================================================
 // 1. VARIÁVEIS DE ESTADO GLOBAL
 // =========================================================================
-let cart = [];
+let cart = []; // Array que armazena os bolos adicionados pelo cliente
 
 // =========================================================================
 // 2. DISPAROS AO CARREGAR A PÁGINA
@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarVitrineReal();
   carregarDadosLembrados();
   configurarOlhinhoSenha();
+  updateCartUI(); // Inicializa o contador do carrinho zerado
 });
 
 // 🍰 BUSCA REAL DOS BOLOS NO POSTGRESQL (RENDER)
@@ -51,7 +52,7 @@ const forgotForm = document.getElementById("forgotForm");
 const logoutBtn = document.getElementById("logoutBtn");
 
 // =========================================================================
-// 4. GERADOR DE VITRINE DINÂMICO (IMAGENS CORRIGIDAS)
+// 4. GERADOR DE VITRINE DINÂMICO (COM AJUSTE VISUAL)
 // =========================================================================
 function generateCakeCatalog(cakeFlavors) {
   if (!cakeContainer) return;
@@ -78,7 +79,6 @@ function generateCakeCatalog(cakeFlavors) {
     const price = parseFloat(valorBolo).toFixed(2);
     const fullName = tituloBolo + " (#" + itemNumber + ")";
 
-    // 🏆 CORREÇÃO VISUAL: Força o uso do emoji de bolo estilizado, eliminando as tags de imagens externas que aparecem quebradas
     const imagemHTML = `<div class="cake-icon" style="font-size: 3.5rem; text-align: center; padding: 25px 0; background: #1e293b; border-radius: 8px; user-select: none;">🎂</div>`;
 
     const card = document.createElement("div");
@@ -102,7 +102,103 @@ function generateCakeCatalog(cakeFlavors) {
 }
 
 // =========================================================================
-// 5. EVENTO DE ENVIO DO FORMULÁRIO DE LOGIN
+// 5. SISTEMA E REGRAS DO CARRINHO DE COMPRAS (CORRIGIDO)
+// =========================================================================
+function addToCart(name, price) {
+  const existingItem = cart.find((item) => item.name === name);
+  if (existingItem) {
+    existingItem.qty++;
+  } else {
+    cart.push({ name: name, price: parseFloat(price), qty: 1 });
+  }
+  updateCartUI();
+  mostrarToast(`"${name}" adicionado ao carrinho! 🛒`, "sucesso");
+}
+
+function updateCartUI() {
+  let totalItems = 0;
+  cart.forEach((item) => {
+    totalItems += item.qty;
+  });
+
+  // Atualiza o número de itens dentro do botão "🛒 Carrinho (X)" no menu superior
+  if (cartCount) {
+    cartCount.textContent = totalItems;
+  }
+}
+
+// =========================================================================
+// 6. FINALIZAR COMPRA: MULTI-ITENS E WHATSAPP DA SUA LOJA
+// =========================================================================
+async function finalizarPedidoCompleto() {
+  if (cart.length === 0) {
+    mostrarToast("Seu carrinho está vazio!", "erro");
+    return;
+  }
+
+  let listaDeProdutos = "";
+  let valorTotalCalculado = 0;
+  let itensDoPedidoSimples = [];
+
+  cart.forEach((item) => {
+    const subtotalItem = item.price * item.qty;
+    valorTotalCalculado += subtotalItem;
+    listaDeProdutos += `🔹 ${item.qty}x ${item.name} - R$ ${subtotalItem.toFixed(2)}\n`;
+    itensDoPedidoSimples.push(`${item.qty}x ${item.name}`);
+  });
+
+  // Monta a mensagem estruturada para o WhatsApp
+  let message = "*🎂 CR CONFEITARIA - NOVO PEDIDO 🎂*\n\n";
+  message +=
+    "Olá! Gostaria de confirmar a encomenda dos seguintes itens:\n-----------------------------------------\n";
+  message += listaDeProdutos;
+  message += "-----------------------------------------\n";
+  message += `💰 *Total do Pedido: R$ ${valorTotalCalculado.toFixed(2)}*\n\n`;
+  message +=
+    "Por favor, envie as instruções de pagamento e o prazo para retirada!";
+
+  const dadosParaOBanco = {
+    id_pedido: "#" + Math.floor(100000 + Math.random() * 900000),
+    data_hora: new Date().toLocaleString("pt-BR"),
+    descricao_itens: itensDoPedidoSimples.join(", "),
+    status_pedido: "Aguardando Confirmação",
+    valor_total: parseFloat(valorTotalCalculado.toFixed(2)),
+  };
+
+  try {
+    mostrarToast("Salvando pedido no histórico...", "sucesso");
+
+    // Grava o pedido completo na tabela do PostgreSQL
+    await fetch("/api/pedidos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(dadosParaOBanco),
+    });
+
+    renderizarHistoricoPedidos();
+
+    // 🏆 COLOQUE O NÚMERO REAL DA SUA LOJA COM DDD AQUI (Substitua os números abaixo mantendo as aspas)
+    // Exemplo: se for de São Paulo: "5511999999999", se for Recife: "5581988888888"
+    const numeroLojaOficial = "5581992185775";
+
+    const mensagemFormatada = encodeURIComponent(message);
+    window.open(
+      `https://wa.me{numeroLojaOficial}?text=${mensagemFormatada}`,
+      "_blank",
+    );
+
+    // Limpa o carrinho após o sucesso da compra
+    cart = [];
+    updateCartUI();
+    mostrarToast("Pedido concluído com sucesso!", "sucesso");
+  } catch (e) {
+    console.error(e);
+    mostrarToast("Erro ao processar o checkout no servidor.", "erro");
+  }
+}
+
+// =========================================================================
+// 7. EVENTOS DE AUTENTICAÇÃO (LOGIN E CADASTRO REAIS)
 // =========================================================================
 if (loginForm) {
   loginForm.addEventListener("submit", async (evento) => {
@@ -143,11 +239,7 @@ if (loginForm) {
         if (rememberMeCheckbox && rememberMeCheckbox.checked) {
           localStorage.setItem("remembered_user", entradaLogin);
           localStorage.setItem("remembered_pass", entradaSenha);
-        } else {
-          localStorage.removeItem("remembered_user");
-          localStorage.removeItem("remembered_pass");
         }
-
         loginForm.reset();
         renderizarHistoricoPedidos();
         carregarVitrineReal();
@@ -156,30 +248,23 @@ if (loginForm) {
       }
     } catch (erro) {
       console.error(erro);
-      mostrarToast("Erro interno ao processar a autenticação.", "erro");
+      mostrarToast("Erro interno ao autenticar.", "erro");
     }
   });
 }
-
-// =========================================================================
-// 6. EVENTO DE ENVIO DO FORMULÁRIO DE CADASTRO
-// =========================================================================
 if (formularioDeCadastro) {
   formularioDeCadastro.addEventListener("submit", async (evento) => {
     evento.preventDefault();
     const inputUser = document.getElementById("regUsername");
     const inputEmail = document.getElementById("regEmail");
     const inputPass = document.getElementById("regPassword");
-
     if (!inputUser || !inputEmail || !inputPass) return;
-
     const dadosDoCadastro = {
       username: inputUser.value.trim(),
       email: inputEmail.value.trim(),
       senha: inputPass.value.trim(),
       telefone: "",
     };
-
     try {
       const resposta = await fetch("/api/usuarios/cadastro", {
         method: "POST",
@@ -202,9 +287,8 @@ if (formularioDeCadastro) {
     }
   });
 }
-
 // =========================================================================
-// 7. RENDERIZAR HISTÓRICO DE PEDIDOS (POSTGRESQL REVISADO)
+// 8. HISTÓRICO DE PEDIDOS (POSTGRESQL REVISADO)
 // =========================================================================
 async function renderizarHistoricoPedidos() {
   const container = document.getElementById("ordersContainer");
@@ -213,55 +297,44 @@ async function renderizarHistoricoPedidos() {
     const resposta = await fetch("/api/pedidos");
     const pedidosDoBanco = await resposta.json();
     if (!pedidosDoBanco || pedidosDoBanco.length === 0) {
-      container.innerHTML =
-        '<p style="color: #94a3b8;">Você ainda não realizou nenhum pedido.</p>';
+      container.innerHTML = "Você ainda não realizou nenhum pedido.";
       return;
     }
     const total = pedidosDoBanco.length;
     container.innerHTML = pedidosDoBanco
       .map((pedido, indice) => {
         const textoItens = pedido.descricao_itens || "1x Bolo Selecionado";
-        return `
-        <div class="order-card" style="border: 1px solid #334155; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #1e293b; color: #f8fafc; text-align: left;">
-          <h4 style="margin: 0 0 5px 0; color: #f8fafc;">Pedido ${pedido.id_pedido || "#000000"} (${total - indice} de ${total})</h4>
-          <p style="font-size: 12px; color: #94a3b8; margin: 0 0 8px 0;">${pedido.data_hora || ""}</p>
-Itens: ${textoItens}
-Status: ${pedido.status_pedido || "Aguardando"}
-Total: R$ ${parseFloat(pedido.valor_total || 0).toFixed(2)}
-
-`;
+        return (
+          <div
+            class="order-card"
+            style="border: 1px solid #334155; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #1e293b; color: #f8fafc; text-align: left;"
+          >
+            {" "}
+            <h4 style="margin: 0 0 5px 0; color: #f8fafc;">
+              Pedido ${pedido.id_pedido || "#000000"} (${total - indice} de $
+              {total})
+            </h4>{" "}
+            <p style="font-size: 12px; color: #94a3b8; margin: 0 0 8px 0;">
+              ${pedido.data_hora || ""}
+            </p>{" "}
+            <p style="margin: 0 0 5px 0;">
+              <strong>Itens:</strong> ${textoItens}
+            </p>{" "}
+            <p style="margin: 0 0 5px 0;">
+              <strong>Status:</strong>{" "}
+              <span style="background:#fff3cd; color:#856404; padding:2px 6px; border-radius:4px; font-size:12px;">
+                ${pedido.status_pedido || "Aguardando"}
+              </span>
+            </p>{" "}
+            <p style="margin: 5px 0 0 0; font-weight:bold; color:#f43f5e;">
+              Total: R$ ${parseFloat(pedido.valor_total || 0).toFixed(2)}
+            </p>{" "}
+          </div>
+        );
       })
       .join("");
   } catch (erro) {
     container.innerHTML = "Erro ao carregar o histórico de compras.";
-  }
-}
-// =========================================================================
-// 8. FINALIZAR COMPRA E DISPARAR LINK WHATSAPP
-// =========================================================================
-async function finalizarPedidoCompleto(nomeBolo, precoBolo) {
-  const dadosParaOBanco = {
-    id_pedido: "#" + Math.floor(100000 + Math.random() * 900000),
-    data_hora: new Date().toLocaleString("pt-BR"),
-    descricao_itens: "1x " + nomeBolo,
-    status_pedido: "Aguardando Confirmação",
-    valor_total: parseFloat(precoBolo),
-  };
-  try {
-    mostrarToast("Enviando pedido para o sistema...", "sucesso");
-    await fetch("/api/pedidos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dadosParaOBanco),
-    });
-    renderizarHistoricoPedidos();
-    mostrarToast("Pedido salvo! Abrindo WhatsApp...", "sucesso");
-    const message = `*🎂 CR CONFEITARIA - NOVO PEDIDO *\n\nEncomenda de: *${nomeBolo}*\nTotal: *R$ ${parseFloat(precoBolo).toFixed(2)}*\n\nAguardando instruções de pagamento!`;
-    const mensagemFormatada = encodeURIComponent(message);
-    window.open(`https://wa.me/${mensagemFormatada}`, "_blank");
-  } catch (e) {
-    console.error(e);
-    mostrarToast("Erro ao processar checkout.", "erro");
   }
 }
 
@@ -269,10 +342,16 @@ async function finalizarPedidoCompleto(nomeBolo, precoBolo) {
 // 9. CENTRAL DE CLIQUES GLOBAL (ESCUTADOR DE BOTÕES)
 // =========================================================================
 document.addEventListener("click", (e) => {
+  // CLIQUE EM ADICIONAR AO CARRINHO (VITRINE)
   if (e.target && e.target.classList.contains("btn-buy")) {
     const nome = e.target.getAttribute("data-name");
     const preco = e.target.getAttribute("data-price");
-    finalizarPedidoCompleto(nome, preco);
+    addToCart(nome, preco); // Envia o item para o carrinho local, em vez de abrir o zap na hora!
+    return;
+  }
+  // CLIQUE NO BOTÃO DO CARRINHO DO MENU SUPERIOR OU FINALIZAR
+  if (e.target && e.target.id === "cartToggleBtn") {
+    finalizarPedidoCompleto(); // Dispara o fechamento do carrinho e o envio completo!
     return;
   }
   if (e.target && e.target.classList.contains("nav-btn")) {
@@ -317,7 +396,7 @@ function mostrarToast(mensagem, tipo = "sucesso") {
   toast.id = "toast-sistema";
   toast.textContent = mensagem;
   toast.style =
-    "position:fixed; bottom:20px; right:20px; padding:12px 20px; border-radius:8px; color:#fff; font-weight:bold; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.25);";
+    "position:fixed; bottom:20px; right:20px; padding:12px 20px; border-radius:8px; color:#fff; font-weight:bold; z-index:9999; box-shadow:0 4px 12px rgba(0,0,0,0.25);font-size:14px;";
   toast.style.backgroundColor = tipo === "sucesso" ? "#22c55e" : "#ef4444";
   document.body.appendChild(toast);
   setTimeout(() => {
