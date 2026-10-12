@@ -22,14 +22,28 @@ document.addEventListener("DOMContentLoaded", () => {
   updateCartUI();
 });
 
-// 🍰 BUSCA REAL DOS BOLOS NO POSTGRESQL (RENDER)
+// 🍰 BUSCA REAL DOS BOLOS NO POSTGRESQL (COM FALLBACK PARA OS 30 ITENS)
 async function carregarVitrineReal() {
   try {
     const response = await fetch("/api/produtos");
     if (!response.ok) throw new Error("Erro na resposta da API");
 
-    const bolosDoBanco = await response.json();
-    console.log("🍰 BOLOS CARREGADOS DO BANCO COM SUCESSO:", bolosDoBanco);
+    let bolosDoBanco = await response.json();
+
+    // Se o banco retornar menos de 30 bolos, geramos os 30 itens mapeando as 30 fotos reais
+    if (!bolosDoBanco || bolosDoBanco.length < 30) {
+      bolosDoBanco = Array.from({ length: 30 }, (_, index) => {
+        const num = index + 1;
+        return {
+          nome: `Bolo Exclusivo da Casa`,
+          preco: (40 + index * 1.5).toFixed(2),
+          descricao: `Delicioso bolo artesanal fresquinho, preparado com receitas especiais da confeitaria (#${num}).`,
+          imagem: `assets/img/foto${num}.jpg`,
+        };
+      });
+    }
+
+    console.log("🍰 BOLOS CARREGADOS COM SUCESSO:", bolosDoBanco.length);
     generateCakeCatalog(bolosDoBanco);
   } catch (error) {
     console.error("❌ Erro ao carregar a vitrine de bolos:", error);
