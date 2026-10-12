@@ -230,7 +230,7 @@ function mostrarToast(mensagem, tipo = "sucesso") {
   if (antigo) antigo.remove();
   const toast = document.createElement("div");
   toast.id = "toast-sistema";
-  toast.textContent = mensaje || mensagem;
+  toast.textContent = mensagem;
   toast.style.position = "fixed";
   toast.style.bottom = "20px";
   toast.style.right = "20px";
@@ -340,6 +340,7 @@ if (loginForm) {
     }
   });
 }
+
 // =========================================================================
 // 8. HISTÓRICO DE PEDIDOS E INTEGRAÇÃO POSTGRESQL
 // =========================================================================
