@@ -383,6 +383,53 @@ function alterarQuantidadeItem(nomeProduto, acao) {
 }
 
 // =========================================================================
+// RENDERIZAR O VISUAL DO CARRINHO (GAVETÃO LATERAL)
+// =========================================================================
+function renderizarCarrinhoVisual() {
+  const containerItens = document.getElementById("cartItemsContainer");
+  const elementoTotal = document.getElementById("cartTotalValue");
+
+  if (!containerItens) return;
+
+  if (cart.length === 0) {
+    containerItens.innerHTML =
+      '<p class="empty-cart-text" style="color: #94a3b8; text-align: center; padding: 20px;">Seu carrinho está vazio.</p>';
+    if (elementoTotal) elementoTotal.textContent = "R$ 0,00";
+    return;
+  }
+
+  let htmlCarrinho = "";
+  let valorTotalGeral = 0;
+
+  cart.forEach((item) => {
+    const subtotal = item.price * item.qty;
+    valorTotalGeral += subtotal;
+
+    htmlCarrinho += `
+      <div class="cart-item-card" style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 8px; margin-bottom: 10px; color: #f8fafc;">
+        <div style="flex: 1;">
+          <div style="font-weight: bold; font-size: 14px;">${item.name}</div>
+          <div style="font-size: 12px; color: #94a3b8;">R$ ${item.price.toFixed(2)} un</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button onclick="alterarQuantidadeItem('${item.name}', 'diminuir')" style="background: #334155; color: white; border: none; width: 25px; height: 25px; border-radius: 4px; cursor: pointer; font-weight: bold;">-</button>
+          <span style="font-weight: bold; font-size: 14px; min-width: 20px; text-align: center;">${item.qty}</span>
+          <button onclick="alterarQuantidadeItem('${item.name}', 'aumentar')" style="background: #334155; color: white; border: none; width: 25px; height: 25px; border-radius: 4px; cursor: pointer; font-weight: bold;">+</button>
+        </div>
+        <div style="font-weight: bold; color: #22c55e; font-size: 14px; margin-left: 10px;">
+          R$ ${subtotal.toFixed(2)}
+        </div>
+      </div>
+    `;
+  });
+
+  containerItens.innerHTML = htmlCarrinho;
+  if (elementoTotal) {
+    elementoTotal.textContent = `R$ ${valorTotalGeral.toFixed(2)}`;
+  }
+}
+
+// =========================================================================
 // EXCLUIR PEDIDO DO HISTÓRICO
 // =========================================================================
 async function excluirPedido(idPedido) {
@@ -420,10 +467,28 @@ document.addEventListener("click", (e) => {
     addToCart(nome, preco);
     return;
   }
+
+  // 🛒 Abrir gavetão do carrinho
   if (e.target && e.target.id === "cartToggleBtn") {
-    alternarModalCarrinho(); // <- Abre a tela do carrinho
+    const drawer = document.getElementById("cartDrawer");
+    if (drawer) drawer.classList.add("open");
+    renderizarCarrinhoVisual();
     return;
   }
+
+  // ❌ Fechar gavetão do carrinho no 'X'
+  if (e.target && e.target.id === "closeCartBtn") {
+    const drawer = document.getElementById("cartDrawer");
+    if (drawer) drawer.classList.remove("open");
+    return;
+  }
+
+  // 🚀 Finalizar pedido via WhatsApp (dentro da gaveta)
+  if (e.target && e.target.id === "checkoutWhatsAppBtn") {
+    finalizarPedidoCompleto();
+    return;
+  }
+
   if (e.target && e.target.classList.contains("nav-btn")) {
     const targetPanelId = e.target.getAttribute("data-target");
     if (!targetPanelId) return;
@@ -438,18 +503,21 @@ document.addEventListener("click", (e) => {
     if (targetPanel) targetPanel.classList.add("active");
     return;
   }
+
   if (e.target && e.target.id === "openRegister") {
     e.preventDefault();
     if (loginBox) loginBox.style.display = "none";
     if (registerBox) registerBox.style.display = "block";
     return;
   }
+
   if (e.target && e.target.id === "openLogin") {
     e.preventDefault();
     if (registerBox) registerBox.style.display = "none";
     if (loginBox) loginBox.style.display = "block";
     return;
   }
+
   if (e.target && e.target.id === "logoutBtn") {
     if (welcomeBox) welcomeBox.style.display = "none";
     if (loginBox) loginBox.style.display = "block";
