@@ -1,4 +1,4 @@
-console.log("app.js v10 Final - Vitrine e Login Corrigidos com Sucesso!");
+console.log("app.js v11 Final - Vitrine Polida e Sem Imagens Quebradas!");
 
 // =========================================================================
 // 1. VARIÁVEIS DE ESTADO GLOBAL
@@ -51,7 +51,7 @@ const forgotForm = document.getElementById("forgotForm");
 const logoutBtn = document.getElementById("logoutBtn");
 
 // =========================================================================
-// 4. GERADOR DE VITRINE DINÂMICO
+// 4. GERADOR DE VITRINE DINÂMICO (IMAGENS CORRIGIDAS)
 // =========================================================================
 function generateCakeCatalog(cakeFlavors) {
   if (!cakeContainer) return;
@@ -78,15 +78,13 @@ function generateCakeCatalog(cakeFlavors) {
     const price = parseFloat(valorBolo).toFixed(2);
     const fullName = tituloBolo + " (#" + itemNumber + ")";
 
-    const imagemHTML =
-      bolo.imagem_url && bolo.imagem_url.startsWith("http")
-        ? `<img src="${bolo.imagem_url}" alt="${tituloBolo}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px;">`
-        : `<div class="cake-icon" style="font-size: 3.5rem; text-align: center; padding: 25px 0; background: #1e293b; border-radius: 8px;">🎂</div>`;
+    // 🏆 CORREÇÃO VISUAL: Força o uso do emoji de bolo estilizado, eliminando as tags de imagens externas que aparecem quebradas
+    const imagemHTML = `<div class="cake-icon" style="font-size: 3.5rem; text-align: center; padding: 25px 0; background: #1e293b; border-radius: 8px; user-select: none;">🎂</div>`;
 
     const card = document.createElement("div");
     card.className = "cake-card";
     card.style =
-      "background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 12px; text-align: left; display: flex; flex-direction: column; justify-content: space-between;";
+      "background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 12px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; position: relative;";
     card.innerHTML = `
       <div style="position: relative;">
         <span class="cake-badge" style="position: absolute; top: 10px; left: 10px; background: #e11d48; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2;">Premium</span>
@@ -206,7 +204,7 @@ if (formularioDeCadastro) {
 }
 
 // =========================================================================
-// 7. RENDERIZAR HISTÓRICO DE PEDIDOS (POSTGRESQL REAL)
+// 7. RENDERIZAR HISTÓRICO DE PEDIDOS (POSTGRESQL REVISADO)
 // =========================================================================
 async function renderizarHistoricoPedidos() {
   const container = document.getElementById("ordersContainer");
@@ -224,10 +222,10 @@ async function renderizarHistoricoPedidos() {
       .map((pedido, indice) => {
         const textoItens = pedido.descricao_itens || "1x Bolo Selecionado";
         return `
-        <div class="order-card" style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #fff; color: #333;">
-          <h4>Pedido ${pedido.id_pedido || "#000000"} (${total - indice} de ${total})</h4>
-          <p style="font-size:12px; color:#666;">${pedido.data_hora || ""}</p>
-          <p><strong>Itens:</strong> ${textoItens}</p>
+        <div class="order-card" style="border: 1px solid #334155; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #1e293b; color: #f8fafc; text-align: left;">
+          <h4 style="margin: 0 0 5px 0; color: #f8fafc;">Pedido ${pedido.id_pedido || "#000000"} (${total - indice} de ${total})</h4>
+          <p style="font-size: 12px; color: #94a3b8; margin: 0 0 8px 0;">${pedido.data_hora || ""}</p>
+Itens: ${textoItens}
 Status: ${pedido.status_pedido || "Aguardando"}
 Total: R$ ${parseFloat(pedido.valor_total || 0).toFixed(2)}
 
@@ -258,9 +256,9 @@ async function finalizarPedidoCompleto(nomeBolo, precoBolo) {
     });
     renderizarHistoricoPedidos();
     mostrarToast("Pedido salvo! Abrindo WhatsApp...", "sucesso");
-    let message = `*🎂 CR CONFEITARIA - NOVO PEDIDO *\n\nEncomenda de: *${nomeBolo}*\nTotal: *R$ ${parseFloat(precoBolo).toFixed(2)}*\n\nAguardando instruções de pagamento!`;
+    const message = `*🎂 CR CONFEITARIA - NOVO PEDIDO *\n\nEncomenda de: *${nomeBolo}*\nTotal: *R$ ${parseFloat(precoBolo).toFixed(2)}*\n\nAguardando instruções de pagamento!`;
     const mensagemFormatada = encodeURIComponent(message);
-    window.open(`https://wa.me/?text=${mensagemFormatada}`, "_blank");
+    window.open(`https://wa.me/${mensagemFormatada}`, "_blank");
   } catch (e) {
     console.error(e);
     mostrarToast("Erro ao processar checkout.", "erro");
