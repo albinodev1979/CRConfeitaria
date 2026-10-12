@@ -421,7 +421,7 @@ document.addEventListener("click", (e) => {
     return;
   }
   if (e.target && e.target.id === "cartToggleBtn") {
-    finalizarPedidoCompleto();
+    alternarModalCarrinho(); // <- Abre a tela do carrinho
     return;
   }
   if (e.target && e.target.classList.contains("nav-btn")) {
