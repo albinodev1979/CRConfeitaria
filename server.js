@@ -148,6 +148,21 @@ app.get("/api/pedidos", async (req, res) => {
     const result = await pool.query(
       "SELECT * FROM historico_pedidos ORDER BY id DESC",
     );
+    // 🍰 ROTA PARA BUSCAR TODOS OS BOLOS DA VITRINE
+    app.get("/api/produtos", async (req, res) => {
+      try {
+        const resultado = await pool.query(
+          "SELECT * FROM produtos ORDER BY id ASC",
+        );
+        res.json(resultado.rows); // Envia a lista de bolos para o front-end
+      } catch (erro) {
+        console.error("Erro ao buscar produtos:", erro);
+        res
+          .status(500)
+          .json({ erro: "Erro ao carregar os produtos da vitrine." });
+      }
+    });
+
     res.json(result.rows);
   } catch (erro) {
     console.error("Erro ao buscar no banco:", erro);

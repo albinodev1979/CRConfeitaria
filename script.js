@@ -38,50 +38,25 @@ let cart = [];
 // 🚀 REQUISIÇÃO DA API NO CARREGAMENTO INICIAL
 // =========================================================================
 document.addEventListener("DOMContentLoaded", () => {
-  carregarDadosLembrados();
   renderizarHistoricoPedidos();
-
-  fetch("https://onrender.com/api/mensagem")
-    .then((response) => response.json())
-    .then((data) => {
-      console.log("Mensagem da API recebida no início:", data);
-    })
-    .catch((error) => console.error("Erro ao conectar com a API:", error));
+  carregarVitrineReal(); // Chama a nova função de carregar os bolos
 });
 
-// --- SABORES DE BOLOS (30 Sabores Oficiais) ---
-const cakeFlavors = [
-  "Chocolate Belga",
-  "Red Velvet Premium",
-  "Ninho com Nutella",
-  "Morango Silvestre",
-  "Cenoura com Brigadeiro",
-  "Doce de Leite com Ameixa",
-  "Abacaxi com Coco",
-  "Maracujá Trufado",
-  "Limão Siciliano",
-  "Prestígio Supremo",
-  "Churros Artesanal",
-  "Nozes com Baba de Moça",
-  "Floresta Negra",
-  "Marta Rocha",
-  "Corta de Frutas Vermelhas",
-  "Sonho de Valsa",
-  "Ouro Branco",
-  "KitKat Especial",
-  "Ganache Meio Amargo",
-  "Pistache Trufado",
-  "Ferrero Rocher",
-  "Rafaello Gourmet",
-  "Paçoca Cremosa",
-  "Baunilha com Doce de Leite",
-  "Amêndoas Tostadas",
-  "Laka com Diamante Negro",
-  "Brigadeiro Branco",
-  "Mesclado Tradicional",
-  "Banana com Canela",
-  "Sensação Real",
-];
+// 🍰 NOVA FUNÇÃO: Busca os bolos reais cadastrados no PostgreSQL
+async function carregarVitrineReal() {
+  try {
+    // Usa a rota relativa correta conectando direto com seu server.js
+    const response = await fetch("/api/produtos");
+    const cakeFlavors = await response.json();
+
+    console.log("🍰 BOLOS REALMENTE CARREGADOS DO BANCO:", cakeFlavors);
+
+    // A partir daqui, você pode usar a variável `cakeFlavors` exatamente
+    // como você já usava no restante do seu código abaixo para desenhar os bolos na tela!
+  } catch (error) {
+    console.error("Erro ao carregar a vitrine de bolos:", error);
+  }
+}
 
 // --- ELEMENTOS DO DOM ---
 const loginBox = document.getElementById("loginBox");
