@@ -14,16 +14,52 @@ document.addEventListener("DOMContentLoaded", () => {
   carregarDadosLembrados();
 });
 
-// 🍰 BUSCA REAL DOS BOLOS NO POSTGRESQL
-async function carregarVitrineReal() {
-  try {
-    const response = await fetch("/api/produtos");
-    const bolosDoBanco = await response.json();
-    console.log("Bolos carregados do banco com sucesso:", bolosDoBanco);
-    generateCakeCatalog(bolosDoBanco);
-  } catch (error) {
-    console.error("Erro ao carregar a vitrine de bolos:", error);
+// =========================================================================
+// 4. GERADOR DE VITRINE DINÂMICO
+// =========================================================================
+function generateCakeCatalog(cakeFlavors) {
+  if (!cakeContainer) return;
+  cakeContainer.innerHTML = "";
+
+  if (!cakeFlavors || cakeFlavors.length === 0) {
+    cakeContainer.innerHTML =
+      '<p class="empty-cart-text">Nenhum bolo disponível no momento.</p>';
+    return;
   }
+
+  cakeFlavors.forEach((bolo, index) => {
+    const itemNumber = index + 1;
+    // Garante que o preço seja lido como número mesmo vindo do banco como texto
+    const price = parseFloat(bolo.preco || 0).toFixed(2);
+    const fullName = bolo.nome + " (#" + itemNumber + ")";
+
+    // Força o uso do emoji de bolo para garantir que vai renderizar sem depender de links externos
+    const imagemHTML = `<div class="cake-icon" style="font-size: 4rem; text-align: center; padding: 20px 0; background: #f8fafc; border-radius: 8px;">🎂</div>`;
+
+    const card = document.createElement("div");
+    card.className = "cake-card";
+    card.innerHTML =
+      '<span class="cake-badge">Premium</span>' +
+      imagemHTML +
+      '<div class="cake-title" style="margin-top: 15px; font-weight: bold; color: #333;">' +
+      fullName +
+      "</div>" +
+      '<div class="cake-desc" style="font-size: 13px; color: #666; margin: 8px 0;">' +
+      (bolo.descricao ||
+        "Bolo artesanal confeccionado com ingredientes premium selecionados.") +
+      "</div>" +
+      '<div class="cake-footer" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">' +
+      '<span class="cake-price" style="font-weight: bold; color: #e11d48;">R\$ ' +
+      price +
+      "</span>" +
+      '<button class="btn-buy" data-name="' +
+      fullName +
+      '" data-price="' +
+      price +
+      '" style="background: #e11d48; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer;">Adicionar</button>' +
+      "</div>";
+    cakeContainer.appendChild(card);
+  });
 }
 
 // =========================================================================
