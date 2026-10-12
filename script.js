@@ -302,38 +302,23 @@ async function renderizarHistoricoPedidos() {
     container.innerHTML = pedidosDoBanco
       .map((pedido, indice) => {
         const textoItens = pedido.descricao_itens || "1x Bolo Selecionado";
-        return (
-          <div
-            class="order-card"
-            style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #fff; color: #333;"
-          >
-            {" "}
-            <h4>
-              Pedido ${pedido.id_pedido || "#000000"} (${total - indice} de $
-              {total})
-            </h4>{" "}
-            <p style="font-size:12px; color:#666;">${pedido.data_hora || ""}</p>{" "}
-            <p>
-              <strong>Itens:</strong> ${textoItens}
-            </p>{" "}
-            <p>
-              <strong>Status:</strong>{" "}
-              <span style="background:#fff3cd; color:#856404; padding:2px 6px; border-radius:4px;">
-                ${pedido.status_pedido || "Aguardando"}
-              </span>
-            </p>{" "}
-            <p>
-              <strong>Total:</strong> R$ $
-              {parseFloat(pedido.valor_total || 0).toFixed(2)}
-            </p>{" "}
+        // 🏆 CORREÇÃO: Envolvido o HTML em crases válidas para JavaScript Puro
+        return `
+          <div class="order-card" style="border: 1px solid #ccc; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #fff; text-align: left; color: #333;">
+            <h4>Pedido ${pedido.id_pedido || "#000000"} (${total - indice} de ${total})</h4>
+            <p style="font-size:12px; color:#666;">${pedido.data_hora || ""}</p>
+            <p><strong>Itens:</strong> ${textoItens}</p>
+            <p><strong>Status:</strong> <span style="background:#fff3cd; color:#856404; padding:2px 6px; border-radius:4px;">${pedido.status_pedido || "Aguardando"}</span></p>
+            <p><strong>Total:</strong> R$ ${parseFloat(pedido.valor_total || 0).toFixed(2)}</p>
           </div>
-        );
+        `;
       })
       .join("");
   } catch (erro) {
     container.innerHTML = "Erro ao carregar o histórico.";
   }
 }
+
 async function finalizarPedidoCompleto() {
   if (!cart || cart.length === 0) return;
   let itensDoPedidoSimples = [];
