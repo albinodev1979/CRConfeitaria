@@ -31,6 +31,16 @@ app.use(express.static(pastaPublica));
 app.get("/", (req, res) => {
   res.sendFile(path.join(pastaPublica, "index.html"));
 });
+// Rota para entregar os produtos do banco de dados à vitrine
+app.get("/api/produtos", async (req, res) => {
+  try {
+    const resultado = await pool.query("SELECT * FROM produtos"); // Substitua 'produtos' pelo nome real da sua tabela se for diferente
+    res.json(resultado.rows);
+  } catch (erro) {
+    console.error("Erro ao buscar produtos:", erro);
+    res.status(500).json({ erro: "Erro ao carregar produtos" });
+  }
+});
 
 // ==========================================
 // 4. ROTAS DA API (BACK-END)
