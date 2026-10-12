@@ -1,4 +1,4 @@
-console.log("app.js v15.2 - Versao Final com Link do WhatsApp Corrigido");
+console.log("app.js v15.3 - Versão Final Consolidada e Otimizada");
 
 // =========================================================================
 // 1. VARIÁVEIS DE ESTADO GLOBAL
@@ -51,6 +51,74 @@ const forgotForm = document.getElementById("forgotForm");
 const logoutBtn = document.getElementById("logoutBtn");
 
 // =========================================================================
+// 4. GERADOR DE VITRINE DINÂMICO
+// =========================================================================
+function generateCakeCatalog(cakeFlavors) {
+  if (!cakeContainer) return;
+  cakeContainer.innerHTML = "";
+
+  if (!cakeFlavors || cakeFlavors.length === 0) {
+    cakeContainer.innerHTML =
+      '<p class="empty-cart-text" style="color: #94a3b8; text-align: center; width: 100%;">Nenhum bolo disponível no banco de dados.</p>';
+    return;
+  }
+
+  cakeFlavors.forEach((bolo, index) => {
+    const itemNumber = index + 1;
+
+    const tituloBolo =
+      bolo.nome || bolo.name || bolo.title || `Bolo Tradicional #${itemNumber}`;
+    const valorBolo = bolo.preco || bolo.price || bolo.value || 0;
+    const detalheBolo =
+      bolo.descricao ||
+      bolo.description ||
+      bolo.desc ||
+      "Delicioso bolo artesanal feito com receitas exclusivas.";
+
+    const price = parseFloat(valorBolo).toFixed(2);
+    const fullName = tituloBolo + " (#" + itemNumber + ")";
+
+    const imagemHTML = `<div class="cake-icon" style="font-size: 3.5rem; text-align: center; padding: 25px 0; background: #1e293b; border-radius: 8px; user-select: none;">🎂</div>`;
+
+    const card = document.createElement("div");
+    card.className = "cake-card";
+    card.style =
+      "background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 12px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; position: relative; margin-bottom: 15px; color: white;";
+
+    let htmlInterno = "";
+    htmlInterno += "<div style='position: relative;'>";
+    htmlInterno +=
+      "  <span style='position: absolute; top: 10px; left: 10px; background: #e11d48; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2;'>Premium</span>";
+    htmlInterno += "  " + imagemHTML;
+    htmlInterno +=
+      "  <div class='cake-title' style='margin-top: 15px; font-weight: bold; color: #f8fafc; font-size: 1.2rem;'>" +
+      fullName +
+      "</div>";
+    htmlInterno +=
+      "  <div class='cake-desc' style='font-size: 13px; color: #94a3b8; margin: 8px 0; line-height: 1.4;'>" +
+      detalheBolo +
+      "</div>";
+    htmlInterno += "</div>";
+    htmlInterno +=
+      "<div class='cake-footer' style='display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;'>";
+    htmlInterno +=
+      "  <span class='cake-price' style='font-weight: bold; color: #f43f5e; font-size: 1.3rem;'>R$ " +
+      price +
+      "</span>";
+    htmlInterno +=
+      "  <button class='btn-buy' data-name='" +
+      fullName +
+      "' data-price='" +
+      price +
+      "' style='background: #e11d48; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;'>Adicionar</button>";
+    htmlInterno += "</div>";
+
+    card.innerHTML = htmlInterno;
+    cakeContainer.appendChild(card);
+  });
+}
+
+// =========================================================================
 // 5. SISTEMA E REGRAS DO CARRINHO DE COMPRAS
 // =========================================================================
 function addToCart(name, price) {
@@ -72,10 +140,74 @@ function updateCartUI() {
   if (cartCount) {
     cartCount.textContent = totalItems;
   }
+  renderizarCarrinhoVisual();
+}
+
+function alterarQuantidadeItem(nomeProduto, acao) {
+  const item = cart.find((i) => i.name === nomeProduto);
+  if (!item) return;
+
+  if (acao === "aumentar") {
+    item.qty++;
+  } else if (acao === "diminuir") {
+    item.qty--;
+    if (item.qty <= 0) {
+      cart = cart.filter((i) => i.name !== nomeProduto);
+    }
+  } else if (acao === "remover") {
+    cart = cart.filter((i) => i.name !== nomeProduto);
+  }
+
+  updateCartUI();
+}
+
+function renderizarCarrinhoVisual() {
+  const containerItens = document.getElementById("cartItemsContainer");
+  const elementoTotal = document.getElementById("cartTotalValue");
+
+  if (!containerItens) return;
+
+  if (cart.length === 0) {
+    containerItens.innerHTML =
+      '<p class="empty-cart-text" style="color: #94a3b8; text-align: center; padding: 20px;">Seu carrinho está vazio.</p>';
+    if (elementoTotal) elementoTotal.textContent = "R$ 0,00";
+    return;
+  }
+
+  let htmlCarrinho = "";
+  let valorTotalGeral = 0;
+
+  cart.forEach((item) => {
+    const subtotal = item.price * item.qty;
+    valorTotalGeral += subtotal;
+
+    htmlCarrinho += `
+      <div class="cart-item-card" style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 8px; margin-bottom: 10px; color: #f8fafc;">
+        <div style="flex: 1; min-width: 0; padding-right: 5px;">
+          <div style="font-weight: bold; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.name}">${item.name}</div>
+          <div style="font-size: 11px; color: #94a3b8;">R$ ${item.price.toFixed(2)} un</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 5px;">
+          <button class="btn-cart-minus" data-name="${item.name}" style="background: #334155; color: white; border: none; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">-</button>
+          <span style="font-weight: bold; font-size: 13px; min-width: 15px; text-align: center;">${item.qty}</span>
+          <button class="btn-cart-plus" data-name="${item.name}" style="background: #334155; color: white; border: none; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">+</button>
+          <button class="btn-cart-remove" data-name="${item.name}" style="background: #ef4444; color: white; border: none; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;" title="Remover item">🗑️</button>
+        </div>
+        <div style="font-weight: bold; color: #22c55e; font-size: 12px; margin-left: 8px; white-space: nowrap;">
+          R$ ${subtotal.toFixed(2)}
+        </div>
+      </div>
+    `;
+  });
+
+  containerItens.innerHTML = htmlCarrinho;
+  if (elementoTotal) {
+    elementoTotal.textContent = `R$ ${valorTotalGeral.toFixed(2)}`;
+  }
 }
 
 // =========================================================================
-// 6. FINALIZAR COMPRA: MULTI-ITENS E ENVIO PARA O WHATSAPP DA SUA LOJA
+// 6. FINALIZAR COMPRA: MULTI-ITENS E ENVIO PARA O WHATSAPP
 // =========================================================================
 async function finalizarPedidoCompleto() {
   if (cart.length === 0) {
@@ -131,6 +263,11 @@ async function finalizarPedidoCompleto() {
 
     cart = [];
     updateCartUI();
+
+    // Fecha o gavetão após finalizar
+    const drawer = document.getElementById("cartDrawer");
+    if (drawer) drawer.classList.remove("open");
+
     mostrarToast("Pedido concluído com sucesso!", "sucesso");
   } catch (e) {
     console.error(e);
@@ -236,7 +373,7 @@ if (formularioDeCadastro) {
 }
 
 // =========================================================================
-// 8. HISTÓRICO DE PEDIDOS (POSTGRESQL REVISADO)
+// 8. HISTÓRICO DE PEDIDOS E EXCLUSÃO
 // =========================================================================
 async function renderizarHistoricoPedidos() {
   const container = document.getElementById("ordersContainer");
@@ -253,20 +390,6 @@ async function renderizarHistoricoPedidos() {
 
     const total = pedidosDoBanco.length;
     let htmlPedidos = "";
-
-    pedidosDoBanco.forEach((pedido, indice) => {
-      const textoItens = pedido.descricao_itens || "1x Bolo Selecionado";
-
-      htmlPedidos += `
-        <div class="order-card" style="border: 1px solid #334155; padding: 15px; margin-bottom: 10px; border-radius: 8px; background: #1e293b; color: #f8fafc; text-align: left;">
-          <h4 style="margin: 0 0 5px 0; color: #f8fafc;">Pedido ${pedido.id_pedido || "#000000"} (${total - indice} de ${total})</h4>
-          <p style="font-size: 12px; color: #94a3b8; margin: 0 0 8px 0;">${pedido.data_hora || ""}</p>
-          <p style="margin: 0 0 5px 0;"><strong>Itens:</strong> ${textoItens}</p>
-          <p style="margin: 0 0 5px 0;"><strong>Status:</strong> <span style="background:#334155; color:#f43f5e; padding:2px 8px; border-radius:4px; font-size:12px;">${pedido.status_pedido || "Aguardando"}</span></p>
-          <p style="margin: 5px 0 0 0; font-weight:bold; color:#22c55e;">Total: R$ ${parseFloat(pedido.valor_total || 0).toFixed(2)}</p>
-        </div>
-      `;
-    });
 
     pedidosDoBanco.forEach((pedido, indice) => {
       const textoItens = pedido.descricao_itens || "1x Bolo Selecionado";
@@ -292,168 +415,33 @@ async function renderizarHistoricoPedidos() {
   }
 }
 
-// =========================================================================
-// CONTROLE DE QUANTIDADE NO CARRINHO (+ / -)
-// =========================================================================
-function alterarQuantidadeItem(nomeProduto, acao) {
-  const item = cart.find((i) => i.name === nomeProduto);
-  if (!item) return;
+async function excluirPedido(idPedido) {
+  if (!confirm(`Deseja realmente excluir o pedido ${idPedido}?`)) return;
 
-  if (acao === "aumentar") {
-    item.qty++;
-  } else if (acao === "diminuir") {
-    item.qty--;
-    // Se a quantidade chegar a 0, remove o item do carrinho
-    if (item.qty <= 0) {
-      cart = cart.filter((i) => i.name !== nomeProduto);
+  try {
+    const resposta = await fetch(`/api/pedidos/${idPedido}`, {
+      method: "DELETE",
+    });
+
+    const resultado = await resposta.json();
+
+    if (resposta.ok && resultado.sucesso !== false) {
+      mostrarToast("Pedido excluído com sucesso!", "sucesso");
+      renderizarHistoricoPedidos();
+    } else {
+      mostrarToast(
+        resultado.erro || "Não foi possível excluir o pedido.",
+        "erro",
+      );
     }
-  }
-
-  updateCartUI();
-  // Se você tiver uma função para renderizar a interface visual do carrinho (ex: modal ou gaveta lateral), chame-a aqui também:
-  // renderizarCarrinhoVisual();
-}
-
-// =========================================================================
-// RENDERIZAR O VISUAL DO CARRINHO (GAVETÃO LATERAL)
-// =========================================================================
-function renderizarCarrinhoVisual() {
-  const containerItens = document.getElementById("cartItemsContainer");
-  const elementoTotal = document.getElementById("cartTotalValue");
-
-  if (!containerItens) return;
-
-  if (cart.length === 0) {
-    containerItens.innerHTML =
-      '<p class="empty-cart-text" style="color: #94a3b8; text-align: center; padding: 20px;">Seu carrinho está vazio.</p>';
-    if (elementoTotal) elementoTotal.textContent = "R$ 0,00";
-    return;
-  }
-
-  let htmlCarrinho = "";
-  let valorTotalGeral = 0;
-
-  cart.forEach((item) => {
-    const subtotal = item.price * item.qty;
-    valorTotalGeral += subtotal;
-
-    htmlCarrinho += `
-      <div class="cart-item-card" style="display: flex; justify-content: space-between; align-items: center; background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 8px; margin-bottom: 10px; color: #f8fafc;">
-        <div style="flex: 1; min-width: 0; padding-right: 5px;">
-          <div style="font-weight: bold; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${item.name}">${item.name}</div>
-          <div style="font-size: 11px; color: #94a3b8;">R$ ${item.price.toFixed(2)} un</div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 5px;">
-          <button class="btn-cart-minus" data-name="${item.name}" style="background: #334155; color: white; border: none; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">-</button>
-          <span style="font-weight: bold; font-size: 13px; min-width: 15px; text-align: center;">${item.qty}</span>
-          <button class="btn-cart-plus" data-name="${item.name}" style="background: #334155; color: white; border: none; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px;">+</button>
-          <button class="btn-cart-remove" data-name="${item.name}" style="background: #ef4444; color: white; border: none; width: 22px; height: 22px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px;" title="Remover item">🗑️</button>
-        </div>
-        <div style="font-weight: bold; color: #22c55e; font-size: 12px; margin-left: 8px; white-space: nowrap;">
-          R$ ${subtotal.toFixed(2)}
-        </div>
-      </div>
-    `;
-  });
-
-  containerItens.innerHTML = htmlCarrinho;
-  if (elementoTotal) {
-    elementoTotal.textContent = `R$ ${valorTotalGeral.toFixed(2)}`;
+  } catch (erro) {
+    console.error("Erro ao excluir pedido:", erro);
+    mostrarToast("Erro de conexão ao tentar excluir o pedido.", "erro");
   }
 }
 
 // =========================================================================
-// CONTROLE DE QUANTIDADE E REMOÇÃO NO CARRINHO
-// =========================================================================
-function alterarQuantidadeItem(nomeProduto, acao) {
-  const item = cart.find((i) => i.name === nomeProduto);
-  if (!item) return;
-
-  if (acao === "aumentar") {
-    item.qty++;
-  } else if (acao === "diminuir") {
-    item.qty--;
-    if (item.qty <= 0) {
-      cart = cart.filter((i) => i.name !== nomeProduto);
-    }
-  } else if (acao === "remover") {
-    cart = cart.filter((i) => i.name !== nomeProduto);
-  }
-
-  updateCartUI();
-}
-
-// =========================================================================
-// 4. GERADOR DE VITRINE DINÂMICO (Sem eventos duplicados)
-// =========================================================================
-function generateCakeCatalog(cakeFlavors) {
-  if (!cakeContainer) return;
-  cakeContainer.innerHTML = "";
-
-  if (!cakeFlavors || cakeFlavors.length === 0) {
-    cakeContainer.innerHTML =
-      '<p class="empty-cart-text" style="color: #94a3b8; text-align: center; width: 100%;">Nenhum bolo disponível no banco de dados.</p>';
-    return;
-  }
-
-  cakeFlavors.forEach((bolo, index) => {
-    const itemNumber = index + 1;
-
-    const tituloBolo =
-      bolo.nome || bolo.name || bolo.title || `Bolo Tradicional #${itemNumber}`;
-    const valorBolo = bolo.preco || bolo.price || bolo.value || 0;
-    const detalheBolo =
-      bolo.descricao ||
-      bolo.description ||
-      bolo.desc ||
-      "Delicioso bolo artesanal feito com receitas exclusivas.";
-
-    const price = parseFloat(valorBolo).toFixed(2);
-    const fullName = tituloBolo + " (#" + itemNumber + ")";
-
-    const imagemHTML = `<div class="cake-icon" style="font-size: 3.5rem; text-align: center; padding: 25px 0; background: #1e293b; border-radius: 8px; user-select: none;">🎂</div>`;
-
-    const card = document.createElement("div");
-    card.className = "cake-card";
-    card.style =
-      "background: #1e293b; border: 1px solid #334155; padding: 1.5rem; border-radius: 12px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; position: relative; margin-bottom: 15px; color: white;";
-
-    let htmlInterno = "";
-    htmlInterno += "<div style='position: relative;'>";
-    htmlInterno +=
-      "  <span style='position: absolute; top: 10px; left: 10px; background: #e11d48; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; z-index: 2;'>Premium</span>";
-    htmlInterno += "  " + imagemHTML;
-    htmlInterno +=
-      "  <div class='cake-title' style='margin-top: 15px; font-weight: bold; color: #f8fafc; font-size: 1.2rem;'>" +
-      fullName +
-      "</div>";
-    htmlInterno +=
-      "  <div class='cake-desc' style='font-size: 13px; color: #94a3b8; margin: 8px 0; line-height: 1.4;'>" +
-      detalheBolo +
-      "</div>";
-    htmlInterno += "</div>";
-    htmlInterno +=
-      "<div class='cake-footer' style='display: flex; justify-content: space-between; align-items: center; margin-top: 15px; border-top: 1px solid #334155; padding-top: 15px;'>";
-    htmlInterno +=
-      "  <span class='cake-price' style='font-weight: bold; color: #f43f5e; font-size: 1.3rem;'>R$ " +
-      price +
-      "</span>";
-    // Nota: Removido addEventListener direto para evitar duplicações; a Central de Cliques trata tudo.
-    htmlInterno +=
-      "  <button class='btn-buy' data-name='" +
-      fullName +
-      "' data-price='" +
-      price +
-      "' style='background: #e11d48; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;'>Adicionar</button>";
-    htmlInterno += "</div>";
-
-    card.innerHTML = htmlInterno;
-    cakeContainer.appendChild(card);
-  });
-}
-
-// =========================================================================
-// 9. CENTRAL DE CLIQUES GLOBAL COM .closest() (Robusta e sem falhas)
+// 9. CENTRAL DE CLIQUES GLOBAL ÚNICA (SEGURANÇA CONTRA DUPLICAÇÃO)
 // =========================================================================
 document.addEventListener("click", (e) => {
   // 1. Botão Mais (+) do Carrinho
@@ -480,7 +468,7 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // 4. Botão Adicionar da Vitrine (Adiciona apenas 1 por clique)
+  // 4. Botão Adicionar da Vitrine (Adiciona exatamente 1 por clique)
   const btnBuy = e.target.closest(".btn-buy");
   if (btnBuy) {
     const nome = btnBuy.getAttribute("data-name");
@@ -555,203 +543,70 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// =========================================================================
-// EXCLUIR PEDIDO DO HISTÓRICO
-// =========================================================================
-async function excluirPedido(idPedido) {
-  if (!confirm(`Deseja realmente excluir o pedido ${idPedido}?`)) return;
-
-  try {
-    const resposta = await fetch(`/api/pedidos/${idPedido}`, {
-      method: "DELETE",
-    });
-
-    const resultado = await resposta.json();
-
-    if (resposta.ok && resultado.sucesso !== false) {
-      mostrarToast("Pedido excluído com sucesso!", "sucesso");
-      renderizarHistoricoPedidos(); // Atualiza a lista na tela
-    } else {
-      mostrarToast(
-        resultado.erro || "Não foi possível excluir o pedido.",
-        "erro",
-      );
-    }
-  } catch (erro) {
-    console.error("Erro ao excluir pedido:", erro);
-    mostrarToast("Erro de conexão ao tentar excluir o pedido.", "erro");
-  }
+// 5. Botão de Finalizar no WhatsApp
+const btnWhatsapp =
+  e.target.closest("#checkoutWhatsAppBtn") ||
+  (e.target.textContent && e.target.textContent.includes("WhatsApp"));
+if (btnWhatsapp) {
+  finalizarPedidoCompleto();
+  return;
 }
 
-// =========================================================================
-// 9. CENTRAL DE CLIQUES GLOBAL (ESCUTADOR DE BOTÕES)
-// =========================================================================
-document.addEventListener("click", (e) => {
-  if (e.target && e.target.classList.contains("btn-buy")) {
-    const nome = e.target.getAttribute("data-name");
-    const preco = e.target.getAttribute("data-price");
-    addToCart(nome, preco);
-    return;
-  }
+// 6. Abrir gaveta do carrinho
+const toggleBtn = e.target.closest("#cartToggleBtn");
+if (toggleBtn) {
+  const drawer = document.getElementById("cartDrawer");
+  if (drawer) drawer.classList.add("open");
+  renderizarCarrinhoVisual();
+  return;
+}
 
-  document.addEventListener("click", (e) => {
-    // Aumentar quantidade
-    if (e.target && e.target.classList.contains("btn-cart-plus")) {
-      const nome = e.target.getAttribute("data-name");
-      alterarQuantidadeItem(nome, "aumentar");
-      return;
-    }
+// 7. Fechar gaveta do carrinho
+const closeBtn =
+  e.target.closest("#closeCartBtn") || e.target.closest(".close-cart-btn");
+if (closeBtn) {
+  const drawer = document.getElementById("cartDrawer");
+  if (drawer) drawer.classList.remove("open");
+  return;
+}
 
-    // Diminuir quantidade
-    if (e.target && e.target.classList.contains("btn-cart-minus")) {
-      const nome = e.target.getAttribute("data-name");
-      alterarQuantidadeItem(nome, "diminuir");
-      return;
-    }
+// 8. Navegação do Painel (Abas)
+const navBtn = e.target.closest(".nav-btn");
+if (navBtn) {
+  const targetPanelId = navBtn.getAttribute("data-target");
+  if (!targetPanelId) return;
+  document
+    .querySelectorAll(".nav-btn")
+    .forEach((b) => b.classList.remove("active"));
+  document
+    .querySelectorAll(".dashboard-panel")
+    .forEach((p) => p.classList.remove("active"));
+  navBtn.classList.add("active");
+  const targetPanel = document.getElementById(targetPanelId);
+  if (targetPanel) targetPanel.classList.add("active");
+  return;
+}
 
-    // Remover item com a lixeira
-    if (e.target && e.target.classList.contains("btn-cart-remove")) {
-      const nome = e.target.getAttribute("data-name");
-      alterarQuantidadeItem(nome, "remover");
-      return;
-    }
+// 9. Alternar telas de Registo / Login / Logout
+if (e.target && e.target.id === "openRegister") {
+  e.preventDefault();
+  if (loginBox) loginBox.style.display = "none";
+  if (registerBox) registerBox.style.display = "block";
+  return;
+}
 
-    // Finalizar Compra via WhatsApp
-    if (e.target && e.target.id === "checkoutWhatsAppBtn") {
-      finalizarPedidoCompleto();
-      return;
-    }
+if (e.target && e.target.id === "openLogin") {
+  e.preventDefault();
+  if (registerBox) registerBox.style.display = "none";
+  if (loginBox) loginBox.style.display = "block";
+  return;
+}
 
-    if (e.target && e.target.classList.contains("btn-buy")) {
-      const nome = e.target.getAttribute("data-name");
-      const preco = e.target.getAttribute("data-price");
-      addToCart(nome, preco);
-      return;
-    }
-
-    if (e.target && e.target.id === "cartToggleBtn") {
-      const drawer = document.getElementById("cartDrawer");
-      if (drawer) drawer.classList.add("open");
-      renderizarCarrinhoVisual();
-      return;
-    }
-
-    if (e.target && e.target.id === "closeCartBtn") {
-      const drawer = document.getElementById("cartDrawer");
-      if (drawer) drawer.classList.remove("open");
-      return;
-    }
-
-    if (e.target && e.target.classList.contains("nav-btn")) {
-      const targetPanelId = e.target.getAttribute("data-target");
-      if (!targetPanelId) return;
-      document
-        .querySelectorAll(".nav-btn")
-        .forEach((b) => b.classList.remove("active"));
-      document
-        .querySelectorAll(".dashboard-panel")
-        .forEach((p) => p.classList.remove("active"));
-      e.target.classList.add("active");
-      const targetPanel = document.getElementById(targetPanelId);
-      if (targetPanel) targetPanel.classList.add("active");
-      return;
-    }
-
-    if (e.target && e.target.id === "openRegister") {
-      e.preventDefault();
-      if (loginBox) loginBox.style.display = "none";
-      if (registerBox) registerBox.style.display = "block";
-      return;
-    }
-
-    if (e.target && e.target.id === "openLogin") {
-      e.preventDefault();
-      if (registerBox) registerBox.style.display = "none";
-      if (loginBox) loginBox.style.display = "block";
-      return;
-    }
-
-    if (e.target && e.target.id === "logoutBtn") {
-      if (welcomeBox) welcomeBox.style.display = "none";
-      if (loginBox) loginBox.style.display = "block";
-      return;
-    }
-  });
-
-  // 🛒 Abrir gavetão do carrinho
-  if (e.target && e.target.id === "cartToggleBtn") {
-    const drawer = document.getElementById("cartDrawer");
-    if (drawer) drawer.classList.add("open");
-    renderizarCarrinhoVisual();
-    return;
-  }
-
-  // ❌ Fechar gavetão do carrinho no 'X'
-  if (e.target && e.target.id === "closeCartBtn") {
-    const drawer = document.getElementById("cartDrawer");
-    if (drawer) drawer.classList.remove("open");
-    return;
-  }
-
-  function alterarQuantidadeItem(nomeProduto, acao) {
-    const item = cart.find((i) => i.name === nomeProduto);
-    if (!item) return;
-
-    if (acao === "aumentar") {
-      item.qty++;
-    } else if (acao === "diminuir") {
-      item.qty--;
-      if (item.qty <= 0) {
-        cart = cart.filter((i) => i.name !== nomeProduto);
-      }
-    } else if (acao === "remover") {
-      cart = cart.filter((i) => i.name !== nomeProduto);
-    }
-
-    updateCartUI();
-  }
-
-  // 🚀 Finalizar pedido via WhatsApp (dentro da gaveta)
-  if (e.target && e.target.id === "checkoutWhatsAppBtn") {
-    finalizarPedidoCompleto();
-    return;
-  }
-
-  if (e.target && e.target.classList.contains("nav-btn")) {
-    const targetPanelId = e.target.getAttribute("data-target");
-    if (!targetPanelId) return;
-    document
-      .querySelectorAll(".nav-btn")
-      .forEach((b) => b.classList.remove("active"));
-    document
-      .querySelectorAll(".dashboard-panel")
-      .forEach((p) => p.classList.remove("active"));
-    e.target.classList.add("active");
-    const targetPanel = document.getElementById(targetPanelId);
-    if (targetPanel) targetPanel.classList.add("active");
-    return;
-  }
-
-  if (e.target && e.target.id === "openRegister") {
-    e.preventDefault();
-    if (loginBox) loginBox.style.display = "none";
-    if (registerBox) registerBox.style.display = "block";
-    return;
-  }
-
-  if (e.target && e.target.id === "openLogin") {
-    e.preventDefault();
-    if (registerBox) registerBox.style.display = "none";
-    if (loginBox) loginBox.style.display = "block";
-    return;
-  }
-
-  if (e.target && e.target.id === "logoutBtn") {
-    if (welcomeBox) welcomeBox.style.display = "none";
-    if (loginBox) loginBox.style.display = "block";
-    return;
-  }
-});
+if (e.target && e.target.id === "logoutBtn") {
+  if (welcomeBox) welcomeBox.style.display = "none";
+  if (loginBox) loginBox.style.display = "block";
+  return;
+} // FIM DO OUVINTE GLOBAL DE CLIQUES
 
 // =========================================================================
 // 10. ROTINAS AUXILIARES (TOASTS, OLHINHO E SESSÃO)
