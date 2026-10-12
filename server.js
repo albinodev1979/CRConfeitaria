@@ -16,7 +16,7 @@ app.use(cors());
 app.use(express.json());
 
 // Permite que o navegador acesse os arquivos da pasta assets publicamente
-app.use("/assets", express.static("assets"));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // Ou, se preferir liberar a raiz inteira do projeto para arquivos estáticos:
 // app.use(express.static('.'));
